@@ -1,0 +1,38 @@
+Arbor
+=====
+
+Arbor is a fork of Nushell.
+
+Upstream project: Nushell (https://github.com/nushell/nushell)
+Upstream version forked from: 0.117.0
+Upstream commit: a481925 (tag 0.117.0)
+Fork date: 2026-11-10
+
+Arbor is licensed under the MIT License. The original Nushell copyright
+notice is preserved in full in the LICENSE file and applies to all code
+inherited from Nushell. See LICENSE.
+
+Changes made in this fork relative to upstream 0.117.0:
+
+  * Renamed the executable from `nu` to `arbor`.
+  * Renamed the default configuration, data and cache directories from
+    `nushell` to `arbor` (e.g. `~/.config/arbor`).
+  * Added automatic migration: if no Arbor configuration exists but a
+    legacy `~/.config/nushell` (or `~/.config/waash`) directory is found,
+    it is used as a fallback so existing setups keep working.
+  * Rebranded user-facing strings, documentation and package metadata.
+
+Arbor does not claim endorsement by or affiliation with the Nushell
+Project. "Nushell" and the Nushell logo are used only to accurately
+describe the origin of this code.
+
+How to keep this fork current with upstream
+-------------------------------------------
+
+    git remote add upstream https://github.com/nushell/nushell
+    git fetch upstream --tags
+    git merge upstream/main
+
+Because Arbor's changes are concentrated in package metadata, path
+resolution (crates/nu-config/src/resolve.rs) and docs, upstream merges
+should stay small and conflict-light.
