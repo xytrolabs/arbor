@@ -41,9 +41,9 @@ use reedline::Helix;
 #[cfg(feature = "sqlite")]
 use reedline::SqliteBackedHistory;
 use reedline::{
-    CursorConfig, CwdAwareHinter, DefaultCompleter, DefaultPrompt, EditCommand, Emacs,
-    FileBackedHistory, HistorySessionId, MouseClickMode, Osc133ClickEventsMarkers, Osc633Markers,
-    Reedline, SemanticPromptMarkers, Signal, Vi,
+    CursorConfig, CwdAwareHinter, DefaultCompleter, EditCommand, Emacs, FileBackedHistory,
+    HistorySessionId, MouseClickMode, Osc133ClickEventsMarkers, Osc633Markers, Reedline,
+    SemanticPromptMarkers, Vi,
 };
 use std::ffi::OsStr;
 use std::sync::atomic::Ordering;
@@ -508,23 +508,25 @@ fn run_command(ctx: RunContext) -> Reedline {
 
     // Arbor: hand bash control-flow blocks to `bash` instead of the Nu parser,
     // so `if ... fi`, `for ... done`, `case ... esac` and `name() { ... }`
-    // keep working the way they do in bash/zsh/fish.
-    if engine_state.get_config().arbor.bash_blocks
-        && crate::bashblock::starts_bash_block(&command)
-    {
-        let cont_prompt = DefaultPrompt::new(
-            reedline::DefaultPromptSegment::Basic(
-                crate::bashblock::CONTINUATION_PROMPT.to_string(),
-            ),
-            reedline::DefaultPromptSegment::Empty,
-        );
-        let exit_code = crate::bashblock::run_bash_line(&command, |_prompt_text| {
-            match line_editor.read_line(&cont_prompt) {
-                Ok(Signal::Success(line)) => Some(line),
-                // Ctrl+C / Ctrl+D abort the block.
-                _ => None,
-            }
-        });
+    // keep working the way they do in bash/zsh/fish. A bare call to a function
+    // defined earlier in the session is delegated too, so definitions persist.
+    let arbor_bash_blocks = engine_state.get_config().arbor.bash_blocks;
+    let is_bash_block = crate::bashblock::starts_bash_block(&command);
+    let calls_remembered_bash_fn =
+        crate::bashblock::is_remembered_function_call(&command);
+
+    if arbor_bash_blocks && (is_bash_block || calls_remembered_bash_fn) {
+        let exit_code = if is_bash_block {
+            crate::bashblock::run_bash_line(&command, |prompt_text| {
+                // Read the continuation line straight from the terminal.
+                // Re-entering reedline here deadlocks: the outer REPL loop
+                // already owns the editor state for this command.
+                crate::bashblock::read_continuation_line(prompt_text)
+            })
+        } else {
+            // A call to a function defined earlier in the session.
+            crate::bashblock::run_bash_with_definitions(&command)
+        };
 
         // Keep the Nu exit status in sync with what bash reported.
         stack.add_env_var(

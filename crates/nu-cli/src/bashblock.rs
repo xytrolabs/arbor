@@ -213,6 +213,94 @@ pub fn run_bash(code: &str) -> i32 {
     }
 }
 
+/// Function definitions collected from previously run blocks.
+///
+/// Each block runs in a fresh `bash -c`, so a `name() { ... }` defined in one
+/// submission would otherwise be gone by the next. Definitions are remembered
+/// here and prepended to every later block so they behave like a persistent
+/// shell session.
+static DEFINITIONS: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
+
+/// Run `code` in a bash shell that also has every previously collected function
+/// definition available. Returns bash's exit code.
+pub fn run_bash_with_definitions(code: &str) -> i32 {
+    let defs = {
+        let guard = match DEFINITIONS.lock() {
+            Ok(g) => g,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        guard.join("\n")
+    };
+
+    let full = if defs.is_empty() {
+        code.to_string()
+    } else {
+        format!("{defs}\n{code}")
+    };
+    run_bash(&full)
+}
+
+/// Remember a function definition so later blocks can call it.
+///
+/// `block` is the collected definition text (e.g. `f() { ... }`). Only complete
+/// definitions are stored; the text is appended verbatim.
+pub fn remember_definition(block: &str) {
+    let trimmed = block.trim();
+    if !trimmed.contains('{') || !trimmed.ends_with('}') {
+        return;
+    }
+    let mut guard = match DEFINITIONS.lock() {
+        Ok(g) => g,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    if !guard.iter().any(|d| d == trimmed) {
+        guard.push(trimmed.to_string());
+    }
+}
+
+/// Whether a collected block is a function definition (as opposed to a loop or
+/// conditional, which must not be replayed on later submissions).
+pub fn is_function_definition(first_line: &str) -> bool {
+    let t = first_line.trim_start();
+    t.starts_with("function ") || (t.contains("()") && t.contains('{'))
+}
+
+/// The short name of a remembered function definition, e.g. `f` for `f() { ... }`.
+fn definition_name(def: &str) -> Option<&str> {
+    let first = def.lines().next()?.trim_start();
+    if let Some(rest) = first.strip_prefix("function ") {
+        return rest.split_whitespace().next();
+    }
+    let open = first.find("()")?;
+    let name = first[..open].trim();
+    if name.is_empty() { None } else { Some(name) }
+}
+
+/// Whether `command` invokes a bash function defined earlier in the session.
+///
+/// Lets `f` typed at the prompt reach the remembered `f() { ... }` instead of
+/// failing as an unknown Nu command.
+pub fn is_remembered_function_call(command: &str) -> bool {
+    let trimmed = command.trim();
+    if trimmed.is_empty() {
+        return false;
+    }
+    // Only a bare command line: no pipes, redirections, or Nu syntax.
+    if trimmed.contains(['|', ';', '<', '>']) {
+        return false;
+    }
+    let name = trimmed.split_whitespace().next().unwrap_or("");
+
+    let guard = match DEFINITIONS.lock() {
+        Ok(g) => g,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    guard
+        .iter()
+        .filter_map(|d| definition_name(d))
+        .any(|n| n == name)
+}
+
 /// Handle one submitted REPL line that starts a bash control-flow block.
 ///
 /// If the line is already complete (`if x; then y; fi`) it runs immediately.
@@ -245,5 +333,48 @@ pub fn run_bash_line(
         }
     }
 
-    run_bash(&block.join("\n"))
+    let code = block.join("\n");
+    let exit_code = run_bash_with_definitions(&code);
+
+    // Keep function definitions so a later `f` call still finds them.
+    if is_function_definition(first) {
+        remember_definition(&code);
+    }
+
+    exit_code
+}
+
+/// Read one continuation line straight from the terminal.
+///
+/// Re-entering `reedline` from inside the REPL's command handler deadlocks,
+/// because the outer loop already owns the editor for this input. Reading the
+/// raw line works for the common cases (typing or pasting a block); there is no
+/// completion or history on continuation lines.
+///
+/// Returns `None` on EOF, Ctrl+C, or a read error so the caller aborts the block
+/// rather than executing something half-formed.
+pub fn read_continuation_line(prompt: &str) -> Option<String> {
+    use std::io::{BufRead, Write};
+
+    // Show the continuation prompt so the user knows the block is incomplete.
+    {
+        let mut out = std::io::stdout();
+        let _ = write!(out, "{prompt}");
+        let _ = out.flush();
+    }
+
+    let stdin = std::io::stdin();
+    let mut line = String::new();
+    match stdin.lock().read_line(&mut line) {
+        Ok(0) => None, // EOF / Ctrl+D
+        Ok(_) => {
+            let trimmed = line.trim_end_matches(['\n', '\r']);
+            // A bare Ctrl+C arrives as ETX in the buffered line.
+            if trimmed.contains('\u{3}') {
+                return None;
+            }
+            Some(trimmed.to_string())
+        }
+        Err(_) => None,
+    }
 }

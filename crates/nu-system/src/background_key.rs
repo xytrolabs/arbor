@@ -151,6 +151,38 @@ pub fn maybe_remap(elapsed: std::time::Duration) -> bool {
     REMAP_ACTIVE.load(Ordering::SeqCst)
 }
 
+/// How long a pipe poll waits before giving up and letting the caller re-check
+/// the shortcut state.
+const READER_POLL_TIMEOUT_MS: i32 = 50;
+
+/// Whether the reader with this raw file descriptor has bytes ready, polling
+/// for a short time.
+///
+/// Lets a pipeline drain notice a Ctrl+B pressed while the child's pipe is
+/// idle. A blocking `read()` cannot be interrupted from the parent, so the
+/// drain waits here instead and re-checks [`was_backgrounded`] each round.
+///
+/// Returns `true` (i.e. "just read normally") when there is nothing to poll:
+/// no terminal, or a descriptor that `poll` rejects.
+pub fn fd_has_data(fd: i32) -> bool {
+    // Only needed while the shortcut is live; otherwise read normally.
+    if !supported() {
+        return true;
+    }
+
+    let mut pfd = libc::pollfd {
+        fd,
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    // SAFETY: `pfd` is a valid single-element buffer; the timeout is finite.
+    let ready = unsafe { libc::poll(&mut pfd, 1, READER_POLL_TIMEOUT_MS) };
+
+    // ready > 0: data, EOF or an error is waiting — let `read` handle it.
+    // ready < 0: EINTR or an unsupported fd — fall through to a normal read.
+    ready != 0
+}
+
 /// Whether the terminal has input pending, WITHOUT consuming it.
 ///
 /// Used so a quick `Ctrl+C`/`Ctrl+B` burst is noticed even between polls.

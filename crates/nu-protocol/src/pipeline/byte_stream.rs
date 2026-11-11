@@ -751,7 +751,11 @@ impl ByteStream {
                 if let Some(stdout) = child.stdout.take() {
                     match stdout {
                         ChildPipe::Pipe(pipe) => {
-                            copy_with_signals(pipe, dest, span, signals)?;
+                            // Arbor: pass the fd so the drain can poll and
+                            // notice a Ctrl+B pressed while the child is idle.
+                            use std::os::fd::AsRawFd;
+                            let fd = Some(pipe.as_raw_fd());
+                            copy_with_signals_fd(pipe, dest, span, signals, fd)?;
                         }
                         ChildPipe::Tee(tee) => {
                             copy_with_signals(tee, dest, span, signals)?;
@@ -1235,16 +1239,32 @@ pub(crate) fn convert_file<T: From<OwnedHandle>>(file: impl Into<OwnedHandle>) -
 const DEFAULT_BUF_SIZE: usize = 8192;
 
 pub fn copy_with_signals(
+    reader: impl Read,
+    writer: impl Write,
+    span: Span,
+    signals: &Signals,
+) -> Result<u64, ShellError> {
+    copy_with_signals_fd(reader, writer, span, signals, None)
+}
+
+/// Like [`copy_with_signals`], but for a child's pipe whose raw file
+/// descriptor is known.
+///
+/// Arbor: with an `fd`, the copy loop polls it with a short timeout instead of
+/// blocking forever in `read()`, so a Ctrl+B pressed while the child is idle
+/// is noticed and the pipeline can return to the prompt.
+pub fn copy_with_signals_fd(
     mut reader: impl Read,
     mut writer: impl Write,
     span: Span,
     signals: &Signals,
+    fd: Option<std::os::fd::RawFd>,
 ) -> Result<u64, ShellError> {
     let from_io_error = IoError::factory(span, None);
     // Arbor: always use `generic_copy` so the Ctrl+B backgrounding check is
     // honoured even when no signals are registered. Plain `io::copy` would
     // block on a pipe that the detached child still owns.
-    match generic_copy(&mut reader, &mut writer, span, signals) {
+    match generic_copy(&mut reader, &mut writer, span, signals, fd) {
         Ok(n) => {
             writer.flush().map_err(&from_io_error)?;
             Ok(n)
@@ -1262,6 +1282,7 @@ fn generic_copy(
     mut writer: impl Write,
     span: Span,
     signals: &Signals,
+    fd: Option<std::os::fd::RawFd>,
 ) -> Result<u64, ShellError> {
     let from_io_error = IoError::factory(span, None);
     let buf = &mut [0; DEFAULT_BUF_SIZE];
@@ -1275,6 +1296,15 @@ fn generic_copy(
         // continues writing to the terminal.
         if nu_system::background_key::was_backgrounded() {
             break;
+        }
+
+        // Arbor: wait for input with a short timeout instead of blocking in
+        // `read()`, so a Ctrl+B pressed while the pipe is idle is noticed. A
+        // plain blocking read cannot be interrupted from this side.
+        if let Some(fd) = fd
+            && !nu_system::background_key::fd_has_data(fd)
+        {
+            continue;
         }
 
         let n = match reader.read(buf) {

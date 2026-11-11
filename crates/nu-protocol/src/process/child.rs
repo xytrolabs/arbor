@@ -644,7 +644,8 @@ fn collect_bytes(pipe: ChildPipe) -> io::Result<Vec<u8>> {
 }
 
 fn consume_pipe(pipe: ChildPipe) -> io::Result<()> {
-    // Arbor: see `collect_bytes`.
+    // Arbor: a child moved to the background (Ctrl+B) still owns the write end
+    // of this pipe, so draining it would block until that process exits.
     if nu_system::background_key::was_backgrounded() {
         return Ok(());
     }
