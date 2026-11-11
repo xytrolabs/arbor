@@ -1,38 +1,81 @@
 Arbor
 =====
 
-Arbor is a fork of Nushell.
+Arbor is an independent shell for structured data.
+
+Arbor began as a rewrite of Nushell, and keeps that project's language and
+command set because they are good and well understood. This file records the
+provenance of the code and the changes made since.
 
 Upstream project: Nushell (https://github.com/nushell/nushell)
-Upstream version forked from: 0.117.0
+Upstream version this work began from: 0.117.0
 Upstream commit: a481925 (tag 0.117.0)
-Fork date: 2026-11-10
+Date Arbor diverged: 2026-11-10
 
 Arbor is licensed under the MIT License. The original Nushell copyright
 notice is preserved in full in the LICENSE file and applies to all code
 inherited from Nushell. See LICENSE.
 
-Changes made in this fork relative to upstream 0.117.0:
+What Arbor owns
+---------------
 
+  * Versioning: Arbor is 1.0.0. Upstream's 0.117.0 is provenance, not the
+    version Arbor reports.
+  * Crate names: `arbor-protocol`, `arbor-engine`, `arbor-parser`, … rather
+    than `nu-protocol`, `nu-engine`, `nu-parser`, …
+  * Error namespace: `Error: arbor::parser::…` rather than `Error: nu::…`.
+  * Binary: `arbor` rather than `nu`.
+  * Configuration: `~/.config/arbor`, `~/.local/share/arbor`, `~/.cache/arbor`.
+  * Presentation: its own banner, prompt and documentation.
+
+Changes since upstream 0.117.0
+------------------------------
+
+  * Renamed every workspace crate from `nu-*` to `arbor-*` (directories,
+    package names, workspace members, dependency keys, source paths).
+  * Renamed the `nu::` diagnostic-code namespace to `arbor::`.
+  * Bumped the workspace version to 1.0.0 and updated the Windows
+    FileVersion/ProductVersion/ProductName metadata.
   * Renamed the executable from `nu` to `arbor`.
   * Renamed the default configuration, data and cache directories from
-    `nushell` to `arbor` (e.g. `~/.config/arbor`).
-  * Added automatic migration: if no Arbor configuration exists but a
-    legacy `~/.config/nushell` (or `~/.config/waash`) directory is found,
-    it is used as a fallback so existing setups keep working.
+    `nushell` to `arbor`, with migration: if no Arbor configuration exists but
+    a legacy `~/.config/nushell` (or `~/.config/waash`) directory is found, it
+    is used as a fallback so existing setups keep working.
+  * Added Indent scripting: `.ind`, `.arbor` and `.waash` files run through the
+    Indent interpreter, with a bundled helper library.
+  * Added `Ctrl+B` backgrounding, including for the builtin `sleep`, and a
+    job-table entry so backgrounded commands can be listed and killed.
+  * Added multi-line bash control-flow blocks.
+  * New default banner and prompt, including a git-aware, two-line prompt and
+    a right-hand status line.
   * Rebranded user-facing strings, documentation and package metadata.
 
-Arbor does not claim endorsement by or affiliation with the Nushell
-Project. "Nushell" and the Nushell logo are used only to accurately
-describe the origin of this code.
+Deliberately unchanged
+-----------------------
 
-How to keep this fork current with upstream
--------------------------------------------
+These names are part of the language or the plugin ABI rather than the build
+layout, so renaming them would silently break existing scripts and plugins:
+
+  * `to nuon` / `from nuon`, and the `nuon` crate — `nuon` is a data format.
+  * The `nu-highlight` and `nu-check` command names.
+  * The argument-completer convention `@"nu-complete foo"`.
+  * The plugin wire-protocol identifier `NuPlugin`.
+
+Attribution
+-----------
+
+Arbor does not claim endorsement by or affiliation with the Nushell Project.
+"Nushell" is used only to describe accurately where this code came from.
+
+Keeping current with upstream
+-----------------------------
 
     git remote add upstream https://github.com/nushell/nushell
     git fetch upstream --tags
     git merge upstream/main
 
-Because Arbor's changes are concentrated in package metadata, path
-resolution (crates/nu-config/src/resolve.rs) and docs, upstream merges
-should stay small and conflict-light.
+Upstream merges are no longer a trivial fast-forward: because the crates and
+diagnostic namespace have been renamed, an upstream merge brings conflicts in
+package manifests and error attributes that must be re-applied to the `arbor-*`
+names. The mapping is mechanical (prefix `nu` -> `arbor`), and `NOTICE` and
+`LICENSE` must stay intact.

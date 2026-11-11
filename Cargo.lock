@@ -244,6 +244,60 @@ dependencies = [
 ]
 
 [[package]]
+name = "arbor"
+version = "1.0.0"
+dependencies = [
+ "arbor-cli",
+ "arbor-cmd-base",
+ "arbor-cmd-extra",
+ "arbor-cmd-lang",
+ "arbor-cmd-plugin",
+ "arbor-command",
+ "arbor-config",
+ "arbor-dap",
+ "arbor-engine",
+ "arbor-experimental",
+ "arbor-explore",
+ "arbor-lsp",
+ "arbor-mcp",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-plugin-core",
+ "arbor-plugin-engine",
+ "arbor-plugin-protocol",
+ "arbor-protocol",
+ "arbor-std",
+ "arbor-system",
+ "arbor-table",
+ "arbor-test-support",
+ "arbor-tui",
+ "arbor-utils",
+ "assert_cmd",
+ "crossterm",
+ "ctrlc",
+ "dirs 7.0.0",
+ "fancy-regex",
+ "itertools 0.15.0",
+ "lexopt",
+ "log",
+ "miette 7.6.0",
+ "multipart-rs",
+ "nix 0.31.3",
+ "openssl",
+ "pretty_assertions",
+ "reedline",
+ "rstest",
+ "same-file",
+ "serde_json",
+ "simplelog",
+ "tango-bench",
+ "tempfile",
+ "time",
+ "windows-sys 0.61.2",
+ "winresource",
+]
+
+[[package]]
 name = "arbor-cli"
 version = "1.0.0"
 dependencies = [
@@ -5557,60 +5611,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3b335231dfd352ffb0f8017f3b6027a4917f7df785ea2143d8af2adc66980ae"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "nu"
-version = "1.0.0"
-dependencies = [
- "arbor-cli",
- "arbor-cmd-base",
- "arbor-cmd-extra",
- "arbor-cmd-lang",
- "arbor-cmd-plugin",
- "arbor-command",
- "arbor-config",
- "arbor-dap",
- "arbor-engine",
- "arbor-experimental",
- "arbor-explore",
- "arbor-lsp",
- "arbor-mcp",
- "arbor-parser",
- "arbor-path",
- "arbor-plugin-core",
- "arbor-plugin-engine",
- "arbor-plugin-protocol",
- "arbor-protocol",
- "arbor-std",
- "arbor-system",
- "arbor-table",
- "arbor-test-support",
- "arbor-tui",
- "arbor-utils",
- "assert_cmd",
- "crossterm",
- "ctrlc",
- "dirs 7.0.0",
- "fancy-regex",
- "itertools 0.15.0",
- "lexopt",
- "log",
- "miette 7.6.0",
- "multipart-rs",
- "nix 0.31.3",
- "openssl",
- "pretty_assertions",
- "reedline",
- "rstest",
- "same-file",
- "serde_json",
- "simplelog",
- "tango-bench",
- "tempfile",
- "time",
- "windows-sys 0.61.2",
- "winresource",
 ]
 
 [[package]]

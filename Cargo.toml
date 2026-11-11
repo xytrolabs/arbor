@@ -15,12 +15,12 @@ license.workspace = true
 version.workspace = true
 build = "scripts/build.rs"
 default-run = "arbor"
-description = "Arbor — a fork of Nushell (a new type of shell)"
-documentation = "https://www.nushell.sh/book/"
+description = "Arbor — a shell for structured data"
+documentation = "https://xytro.site/arbor/docs/"
 exclude = ["images"]
-homepage = "https://www.nushell.sh"
-name = "nu"
-repository = "https://github.com/nushell/nushell"
+homepage = "https://xytro.site/arbor/"
+name = "arbor"
+repository = "https://github.com/xytrolabs/arbor"
 autotests = false
 
 [[test]]
