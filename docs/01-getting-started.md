@@ -26,11 +26,28 @@ upstream commit.
 
 ## Installing
 
+### Prebuilt binaries
+
+Arbor ships ready-made binaries, so you do not need a Rust toolchain:
+
+| Platform | Architectures | Format |
+|---|---|---|
+| Linux | x86_64, aarch64, armv7 | `tar.gz`, statically linked against musl |
+| macOS | x86_64, Apple Silicon | `tar.gz` |
+| Windows | x86_64 | `.zip` (inside WSL, use the Linux build) |
+
+The Linux builds are **static musl** binaries — the same download runs on
+Debian, Fedora, Arch, openSUSE and Alpine. No glibc version matching needed.
+
 ### From the website
 
 ```sh
 curl -fsSL https://xytro.site/arbor/install.sh | bash
 ```
+
+The installer detects your OS and architecture, downloads the matching archive,
+**verifies its SHA-256**, and installs the binary. If no prebuilt binary matches
+your platform, it falls back to building from source automatically.
 
 ### From a source checkout
 
@@ -42,14 +59,21 @@ cd arbor
 ./install.sh
 ```
 
-`install.sh` options:
+### Installer options
 
 | Option | Effect |
 |---|---|
-| *(none)* | Build release and install to `~/.local/bin/arbor` |
-| `--no-build` | Install an existing `target/release/arbor` |
+| *(none)* | Download a prebuilt binary; build from source if none matches |
+| `--pin VERSION` | Install a specific release, e.g. `--pin v1.0.0` |
+| `--from-source` | Skip the download and build with cargo |
+| `--binary` | Require a prebuilt binary; never build from source |
+| `--no-build` | Install an existing `./target/release/arbor` |
 | `--prefix DIR` | Install to `DIR/bin` instead of `~/.local` |
+| `--dry-run` | Print the plan without changing anything |
 | `--version` | Print the Arbor version and exit |
+
+Environment overrides: `ARBOR_PREFIX`, `ARBOR_VERSION`, `ARBOR_BASE_URL`
+(point this at a mirror to install from somewhere other than GitHub).
 
 The installer replaces the binary atomically (copy to a temporary name, then
 `mv`), so it is safe to run while Arbor is open.

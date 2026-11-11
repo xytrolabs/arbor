@@ -7,10 +7,43 @@ pipelines carry structured data instead of text. It keeps Nushell's language and
 commands, and adds features inherited from Waash (its predecessor): Indent
 scripting, `Ctrl+B` backgrounding and bash control-flow blocks.
 
+## How do I install it without Rust?
+
+Use the website installer — it downloads a prebuilt binary and needs no
+toolchain:
+
+```sh
+curl -fsSL https://xytro.site/arbor/install.sh | bash
+```
+
+Prebuilt binaries exist for Linux (x86_64, aarch64, armv7), macOS (Intel and
+Apple Silicon) and Windows (x86_64). The Linux builds are static musl binaries,
+so one download works across distributions. If no binary matches your platform,
+the installer builds from source instead. See
+[Getting Started](01-getting-started.md#installing).
+
+## How do I change the startup banner or prompt?
+
+The banner is a normal Nushell value — hide it in your config:
+
+```nu
+$env.config.show_banner = false
+```
+
+The tree glyph in the default prompt comes from `default_env.nu`. Set your own
+prompt in `config.nu`:
+
+```nu
+$env.PROMPT_COMMAND = {|| $"($env.PWD)> " }
+```
+
+The glyph is omitted automatically when `use_ansi_coloring` is off, so piped
+and plain-terminal output stay clean. See [The Prompt](05-prompt.md).
+
 ## Is Arbor the same as Nushell?
 
 The language is identical — every Nushell command and idiom works. Arbor differs
-in packaging and naming:
+in packaging, naming and presentation:
 
 | | Nushell | Arbor |
 |---|---|---|
@@ -18,6 +51,7 @@ in packaging and naming:
 | Config | `~/.config/nushell` | `~/.config/arbor` |
 | Data | `~/.local/share/nushell` | `~/.local/share/arbor` |
 | Cache | `~/.cache/nushell` | `~/.cache/arbor` |
+| Prompt | path only | tree glyph + path |
 
 See the `NOTICE` file in the repository for the full change list, the exact
 upstream version and commit, and instructions for merging upstream.
