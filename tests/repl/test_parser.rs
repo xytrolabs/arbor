@@ -721,7 +721,9 @@ fn plain_help_keeps_alias_resolution_behavior() -> Result {
 #[case::unknown_command("%nu --version")]
 #[case::custom_command("def foo [] { 'ok' }; %foo")]
 #[case::alias_to_internal("def foo [] { 'ok' }; alias bar = foo; %bar")]
-#[case::alias_to_external("alias ext = ^nu --version; %ext")]
+// Arbor: the binary is renamed to `arbor`, so this must alias the fork's own
+// external command to exercise the "alias to external" branch.
+#[case::alias_to_external("alias ext = ^arbor --version; %ext")]
 fn percent_requires_builtin(#[case] code: &str) -> Result {
     let err = test().run(code).expect_parse_error()?;
     match err {

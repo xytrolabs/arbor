@@ -10,14 +10,19 @@ $env.PROMPT_COMMAND = {||
         $relative_pwd => ([~ $relative_pwd] | path join)
     }
 
-    let colors: record<path: string, separator: string> = match [(config use-colors), (is-admin)] {
-        [false, _] => {path: '', separator: ''}
-        [true, true] => {path: (ansi red_bold), separator: (ansi light_red_bold)}
-        [true, false] => {path: (ansi green_bold), separator: (ansi light_green_bold)}
+    let colors: record<path: string, separator: string, glyph: string> = match [(config use-colors), (is-admin)] {
+        [false, _] => {path: '', separator: '', glyph: ''}
+        [true, true] => {path: (ansi red_bold), separator: (ansi light_red_bold), glyph: (ansi red)}
+        [true, false] => {path: (ansi green_bold), separator: (ansi light_green_bold), glyph: (ansi green)}
     }
     let path_segment = $"($colors.path)($dir)(ansi reset)"
 
-    $path_segment | str replace --all (char path_sep) $"($colors.separator)(char path_sep)($colors.path)"
+    # Arbor: a tree glyph marks the prompt so the shell is identifiable at a
+    # glance, while keeping the familiar Nushell path layout. A plain
+    # double-quoted unicode escape is used so no special font is required.
+    let glyph_segment = if (config use-colors) { $"($colors.glyph)\u{1F332}(ansi reset) " } else { '' }
+
+    ($glyph_segment + ($path_segment | str replace --all (char path_sep) $"($colors.separator)(char path_sep)($colors.path)"))
 }
 
 $env.PROMPT_COMMAND_RIGHT = {||

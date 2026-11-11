@@ -34,7 +34,7 @@
 
 
 # The main binary file to be released
-let bin = 'nu'
+let bin = 'arbor'
 let os = $env.OS
 let target = $env.TARGET
 # Repo source dir like `/home/runner/work/nushell/nushell`
@@ -205,16 +205,16 @@ if $os in ['macos-latest'] or $USE_UBUNTU {
     if $installed and (wix --version | split row . | first | into int) >= 6 {
 
         print $'(char nl)Start creating Windows msi package with the following contents...'
-        cd $src; cd wix; hr-line; mkdir nu
-        # Wix need the binaries be stored in nu folder
-        cp -r ($'($dist)/*' | into glob) nu/
+        cd $src; cd wix; hr-line; mkdir arbor
+        # Wix needs the binaries stored in an arbor folder
+        cp -r ($'($dist)/*' | into glob) arbor/
         cp $'($dist)/README.txt' .
-        ls -f nu/* | print
-        ./nu/nu.exe -c $'NU_RELEASE_VERSION=($version) dotnet build -c Release -p:Platform=($arch)'
+        ls -f arbor/* | print
+        ./arbor/arbor.exe -c $'NU_RELEASE_VERSION=($version) dotnet build -c Release -p:Platform=($arch)'
         glob **/*.msi | print
         # Workaround for https://github.com/softprops/action-gh-release/issues/280
         let wixRelease = (glob **/*.msi | where $it =~ bin | get 0 | str replace --all '\' '/')
-        let msi = $'($wixRelease | path dirname)/nu-($version)-($target).msi'
+        let msi = $'($wixRelease | path dirname)/arbor-($version)-($target).msi'
         mv $wixRelease $msi
         print $'MSI archive: ---> ($msi)';
         echo $"msi=($msi)(char nl)" o>> $env.GITHUB_OUTPUT

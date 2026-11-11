@@ -58,10 +58,14 @@ fn nu_highlight_where_row_condition() -> Result {
 #[test]
 #[deps(NU)]
 fn nu_highlight_aliased_external_resolved() -> Result {
+    // Arbor: this test aliases an external command that is known to exist on
+    // PATH and get resolved. Upstream used `^nu`, but the binary is renamed to
+    // `arbor` in this fork, so `^nu` no longer resolves unless upstream Nushell
+    // happens to be installed too. Use the fork's own binary name.
     let code = "
         $env.config.highlight_resolved_externals = true
         $env.config.color_config.shape_external_resolved = '#ffffff'
-        alias fff = ^nu
+        alias fff = ^arbor
         ('fff' | nu-highlight) has (ansi $env.config.color_config.shape_external_resolved)
     ";
     test().run(code).expect_value_eq(true)

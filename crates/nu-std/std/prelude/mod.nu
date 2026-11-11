@@ -19,20 +19,29 @@ let banner_msg = if $short {
 } else {
     let highlight2 = $env.config.color_config?.banner_highlight2? | default "purple"
     let dt = (datetime-diff (date now) 2019-05-10T09:59:12-07:00)
+    let dt_fork = (datetime-diff (date now) 2026-11-10T00:00:00-08:00)
     let ver = (version)
 
-    let welcome = $"(ansi $highlight1)       /\\ (ansi reset)
-(ansi $highlight1)      /  \\  (ansi reset)(ansi $foreground)Welcome to (ansi $highlight1)Arbor(ansi reset)(ansi $foreground),(ansi reset)
-(ansi $highlight1)     / /\\ \\ (ansi reset)(ansi $foreground)a fork of Nushell,(ansi reset)
-(ansi $highlight1)    /_/  \\_\\\ (ansi reset)(ansi $foreground)where all data is structured!
+    let welcome = $"(ansi $highlight1)            .            (ansi reset)
+(ansi $highlight1)           / \\           (ansi reset)(ansi $foreground)Welcome to arbor,(ansi reset)
+(ansi $highlight1)          /   \\          (ansi reset)(ansi $foreground)structured data, structured thinking(ansi reset)
+(ansi $highlight1)         /     \\         (ansi reset)
+(ansi $highlight1)        /       \\        (ansi reset)(ansi $foreground)a fork of Nushell 0.117(ansi reset)
+(ansi $highlight1)       /         \\       (ansi reset)
+(ansi $highlight1)      /           \\      (ansi reset)(ansi $foreground)Ctrl+B   background any job, keep your prompt(ansi reset)
+(ansi $highlight1)     /             \\     (ansi reset)(ansi $foreground)bash     multi-line blocks just work(ansi reset)
+(ansi $highlight1)    /_______________\\    (ansi reset)
+(ansi $highlight1)          | |            (ansi reset)(ansi $foreground).ind     Indent scripts, shell-first syntax(ansi reset)
+(ansi $highlight1)          | |            (ansi reset)
+(ansi $highlight1)          | |            (ansi reset)
+(ansi $highlight1)    ______|_|______      (ansi reset)
 
 (ansi $foreground)Version: (ansi $highlight1)($ver.version) \(($ver.build_target)\)(ansi reset)
-(ansi $foreground)Arbor is a fork of (ansi $highlight2)Nushell(ansi reset)(ansi $foreground): (ansi $highlight2)https://github.com/nushell/nushell(ansi reset)
-(ansi $foreground)Upstream docs apply: (ansi $highlight2)https://nushell.sh(ansi reset)
-(ansi $foreground)Learn how to remove this at: (ansi $highlight2)https://nushell.sh/book/configuration.html#remove-welcome-message(ansi reset)
+(ansi $foreground)Docs: (ansi $highlight2)https://xytro.site/arbor/(ansi reset)(ansi $foreground) | Upstream: (ansi $highlight2)https://nushell.sh(ansi reset)
+(ansi $foreground)Hide this with: (ansi $highlight2)`$env.config.show_banner = false`(ansi reset)
 
-(ansi $foreground)It's been this long since (ansi $highlight1)Nushell(ansi reset)(ansi $foreground)'s first commit:(ansi reset)
-(ansi $foreground)(pretty-print-duration $dt)
+(ansi $foreground)Since Nushell's first commit: (ansi $highlight1)(pretty-print-duration $dt)(ansi reset)
+(ansi $foreground)Since Arbor's fork:         (ansi $highlight1)(pretty-print-duration $dt_fork)(ansi reset)
 "
 
     if $no_startup_time {
