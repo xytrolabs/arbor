@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use crate::repl::tests::{TestResult, fail_test, run_test, run_test_contains};
 use miette::Diagnostic;
-use nu_experimental::ENFORCE_RUNTIME_ANNOTATIONS;
-use nu_test_support::prelude::*;
+use arbor_experimental::ENFORCE_RUNTIME_ANNOTATIONS;
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 
 #[test]
@@ -20,7 +20,7 @@ fn type_in_list_of_this_type() -> TestResult {
 fn type_in_list_of_non_this_type() -> TestResult {
     fail_test(
         "'hello' in [41 42 43]",
-        "nu::parser::operator_incompatible_types",
+        "arbor::parser::operator_incompatible_types",
     )
 }
 
@@ -50,7 +50,7 @@ fn date_minus_duration() -> TestResult {
 fn duration_minus_date_not_supported() -> TestResult {
     fail_test(
         "2day - 2023-04-22",
-        "nu::parser::operator_incompatible_types",
+        "arbor::parser::operator_incompatible_types",
     )
 }
 
@@ -268,7 +268,7 @@ fn for_loop_incorrect_type_raises_error() -> Result {
     ";
     let err = test().run(code).expect_shell_error()?;
 
-    assert_eq!(err.code().unwrap().to_string(), "nu::shell::type_mismatch");
+    assert_eq!(err.code().unwrap().to_string(), "arbor::shell::type_mismatch");
 
     let labels = err
         .labels()
@@ -308,7 +308,7 @@ fn in_variable_expression_wrong_output_type() -> TestResult {
 fn pipeline_input_on_rhs_is_type_checked() -> TestResult {
     fail_test(
         r#"def test []: int -> any { "x" + $in }; 3 | test"#,
-        "nu::parser::operator_incompatible_types",
+        "arbor::parser::operator_incompatible_types",
     )
 }
 
@@ -392,7 +392,7 @@ fn pipeline_multiple_types_propagate_error() -> TestResult {
 fn array_of_wrong_types() -> TestResult {
     fail_test(
         "0..128 | each {} | into string | bytes collect",
-        "nu::shell::only_supports_this_input_type",
+        "arbor::shell::only_supports_this_input_type",
     )
 }
 

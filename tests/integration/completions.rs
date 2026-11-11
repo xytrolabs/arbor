@@ -1,7 +1,7 @@
 //! End-to-end completion behavior and diagnostics.
 
 use assert_cmd::cargo_bin;
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 use std::process::Command;
 
@@ -153,7 +153,7 @@ fn the_legacy_positional_bridge_warns_once_without_a_log_level() -> Result {
     Ok(())
 }
 
-const NEEDS_A_TERMINAL: &str = "nu::shell::interactive_completer_needs_a_terminal";
+const NEEDS_A_TERMINAL: &str = "arbor::shell::interactive_completer_needs_a_terminal";
 
 /// Interactive completers require a terminal; ordinary ones remain available.
 #[rstest]

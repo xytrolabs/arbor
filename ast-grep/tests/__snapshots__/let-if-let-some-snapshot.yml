@@ -1,7 +1,7 @@
 id: let-if-let-some
 snapshots:
   ? |
-    let completions_path = if let Some(mut path) = nu_path::data_dir() {
+    let completions_path = if let Some(mut path) = arbor_path::data_dir() {
       path.push("nushell");
       path.push("completions");
       path.into()
@@ -9,7 +9,7 @@ snapshots:
       nu::path::PathBuf::new()
     }
   : fixed: |+
-      let completions_path = nu_path::data_dir().map(|mut path| {
+      let completions_path = arbor_path::data_dir().map(|mut path| {
           path.push("nushell");
           path.push("completions");
           path.into()
@@ -20,7 +20,7 @@ snapshots:
 
     labels:
     - source: |-
-        let completions_path = if let Some(mut path) = nu_path::data_dir() {
+        let completions_path = if let Some(mut path) = arbor_path::data_dir() {
           path.push("nushell");
           path.push("completions");
           path.into()

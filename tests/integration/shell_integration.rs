@@ -3,8 +3,8 @@
 // These tests verify that prompt_update::update_prompt correctly renders prompts
 // with ANSI escape sequences and semantic markers in the proper left-to-right order.
 
-use nu_cli::{NushellPrompt, update_prompt};
-use nu_test_support::prelude::*;
+use arbor_cli::{NushellPrompt, update_prompt};
+use arbor_test_support::prelude::*;
 use reedline::{Prompt, PromptEditMode};
 
 // ────────────────────────────────────────────────────────────────────────────────

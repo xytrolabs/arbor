@@ -1,4 +1,4 @@
-use nu_protocol::{
+use arbor_protocol::{
     DEFAULT_ERROR_CONTEXT, Filesize, IntoValue, ParseError, Range, Record, ShellError, Span, Type,
     Unit, Value,
     ast::{Expr, Expression, ListItem, RecordItem},
@@ -55,7 +55,7 @@ pub fn from_nuon(input: &str, span: Option<Span>) -> Result<Value, ShellError> {
     // Windows editors and PowerShell's `Out-File` write one, so a reader that refuses
     // them cannot open files people actually have. `U+FEFF` anywhere else is ordinary
     // content.
-    let mut block = nu_parser::parse(&mut working_set, None, input.as_bytes(), false);
+    let mut block = arbor_parser::parse(&mut working_set, None, input.as_bytes(), false);
 
     if let Some(pipeline) = block.pipelines.get(1) {
         if let Some(element) = pipeline.elements.first() {
@@ -472,7 +472,7 @@ fn convert_to_value(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nu_protocol::{Spanned, ast::ValueWithUnit};
+    use arbor_protocol::{Spanned, ast::ValueWithUnit};
 
     #[test]
     fn nuon_parse_success() {

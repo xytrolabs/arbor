@@ -39,7 +39,7 @@ def compute-coverage [] {
 # but we have to signal to the tests that we use the `ci` `--profile`
 #
 # Manual gathering of coverage to catch invocation of the `nu` binary.
-# This is relevant for tests using the `nu!` macro from `nu-test-support`
+# This is relevant for tests using the `nu!` macro from `arbor-test-support`
 # see: https://github.com/taiki-e/cargo-llvm-cov#get-coverage-of-external-tests
 #
 # To display the coverage in your editor see:

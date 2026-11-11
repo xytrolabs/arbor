@@ -73,10 +73,10 @@ fn invalid_not_regex_fails() -> TestResult {
 
 #[test]
 fn regex_on_int_fails() -> TestResult {
-    fail_test("33 =~ foo", "nu::parser::operator_unsupported_type")
+    fail_test("33 =~ foo", "arbor::parser::operator_unsupported_type")
 }
 
 #[test]
 fn not_regex_on_int_fails() -> TestResult {
-    fail_test("33 !~ foo", "nu::parser::operator_unsupported_type")
+    fail_test("33 !~ foo", "arbor::parser::operator_unsupported_type")
 }

@@ -128,7 +128,7 @@ jobs:
 
       - &step_test_std
         name: Test Std
-        run: nu -n -c 'use crates/nu-std/testing.nu; testing run-tests --path crates/nu-std'
+        run: nu -n -c 'use crates/arbor-std/testing.nu; testing run-tests --path crates/arbor-std'
 
       - &step_setup_python
         name: Setup Python
@@ -181,24 +181,24 @@ jobs:
       cargo-options: >-
         --no-default-features
         --target wasm32-unknown-unknown
-        -p nu-cmd-base
-        -p nu-cmd-extra
-        -p nu-cmd-lang
-        -p nu-color-config
-        -p nu-command
-        -p nu-derive-value
-        -p nu-engine
-        -p nu-glob
-        -p nu-json
-        -p nu-parser
-        -p nu-path
-        -p nu-pretty-hex
-        -p nu-protocol
-        -p nu-std
-        -p nu-system
-        -p nu-table
-        -p nu-term-grid
-        -p nu-utils
+        -p arbor-cmd-base
+        -p arbor-cmd-extra
+        -p arbor-cmd-lang
+        -p arbor-color-config
+        -p arbor-command
+        -p arbor-derive-value
+        -p arbor-engine
+        -p arbor-glob
+        -p arbor-json
+        -p arbor-parser
+        -p arbor-path
+        -p arbor-pretty-hex
+        -p arbor-protocol
+        -p arbor-std
+        -p arbor-system
+        -p arbor-table
+        -p arbor-term-grid
+        -p arbor-utils
         -p nuon
     steps:
       - *step_checkout_repo
@@ -221,8 +221,8 @@ jobs:
       matrix:
         platform: *platforms
         crate:
-          - nu-parser
-          - nu-path
+          - arbor-parser
+          - arbor-path
     steps:
       - *step_checkout_repo
       - *step_setup_rust_toolchain

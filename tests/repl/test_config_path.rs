@@ -11,11 +11,11 @@
 //!
 //! Prefer (1) and (2). Use (3) only for end-to-end startup behavior.
 
-use nu_config::{
+use arbor_config::{
     CliOverrides, ConfigPath, ConfigWarning, NushellConfigDirs, SystemEnv, resolve_paths,
 };
-use nu_protocol::{Config, HistoryConfig, HistoryFileFormat, HistoryPath};
-use nu_test_support::prelude::*;
+use arbor_protocol::{Config, HistoryConfig, HistoryFileFormat, HistoryPath};
+use arbor_test_support::prelude::*;
 use pretty_assertions::assert_eq;
 use std::fs;
 use std::path::PathBuf;
@@ -281,7 +281,7 @@ fn test_default_config_path() -> Result {
     // when it exists and as given otherwise, so a symlinked config (home-manager, a
     // dotfiles repo) shows up as its target rather than the path it was resolved at.
     let canonical =
-        |path: PathBuf| nu_path::canonicalize_with(&path, WORKSPACE_ROOT.as_path()).unwrap_or(path);
+        |path: PathBuf| arbor_path::canonicalize_with(&path, WORKSPACE_ROOT.as_path()).unwrap_or(path);
 
     tester
         .run("$nu.default-config-dir")
@@ -315,12 +315,12 @@ fn test_default_config_path() -> Result {
 
 #[test]
 fn test_alternate_config_path() -> Result {
-    let config_file = "crates/nu-config/default_files/scaffold_config.nu";
-    let env_file = "crates/nu-config/default_files/scaffold_env.nu";
+    let config_file = "crates/arbor-config/default_files/scaffold_config.nu";
+    let env_file = "crates/arbor-config/default_files/scaffold_env.nu";
     let cwd = WORKSPACE_ROOT.as_path();
 
-    let config_path = nu_path::canonicalize_with(config_file, cwd)?;
-    let env_path = nu_path::canonicalize_with(env_file, cwd)?;
+    let config_path = arbor_path::canonicalize_with(config_file, cwd)?;
+    let env_path = arbor_path::canonicalize_with(env_file, cwd)?;
 
     let dirs = NushellConfigDirs {
         config_home: cwd.join("test-home"),
@@ -363,12 +363,12 @@ fn nu_home_dir_is_an_error_without_home() -> Result {
 
 #[test]
 fn use_last_config_path() -> Result {
-    let config_file = "crates/nu-config/default_files/scaffold_config.nu";
-    let env_file = "crates/nu-config/default_files/scaffold_env.nu";
+    let config_file = "crates/arbor-config/default_files/scaffold_config.nu";
+    let env_file = "crates/arbor-config/default_files/scaffold_env.nu";
     let cwd = WORKSPACE_ROOT.as_path();
 
-    let config_path = nu_path::canonicalize_with(config_file, cwd)?;
-    let env_path = nu_path::canonicalize_with(env_file, cwd)?;
+    let config_path = arbor_path::canonicalize_with(config_file, cwd)?;
+    let env_path = arbor_path::canonicalize_with(env_file, cwd)?;
 
     let dirs = NushellConfigDirs {
         config_home: cwd.join("test-home"),

@@ -1,4 +1,4 @@
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 
 #[test]
 fn env_change_define_command() -> Result {
@@ -234,7 +234,7 @@ fn env_change_block_dont_preserve_command() -> Result {
 
     tester
         .run_with_hooks::<Value>("foo")
-        .expect_error_code_eq("nu::shell::external_command")
+        .expect_error_code_eq("arbor::shell::external_command")
 }
 
 #[test]
@@ -300,7 +300,7 @@ fn env_change_dont_panic_with_many_args() -> Result {
 
     tester
         .run_with_hooks::<Value>("")
-        .expect_error_code_eq("nu::shell::incompatible_parameters")
+        .expect_error_code_eq("arbor::shell::incompatible_parameters")
 }
 
 #[test]
@@ -317,7 +317,7 @@ fn err_hook_wrong_env_type_1() -> Result {
 
     test()
         .run_with_hooks::<Value>(code)
-        .expect_error_code_eq("nu::shell::invalid_config")
+        .expect_error_code_eq("arbor::shell::invalid_config")
 }
 
 #[test]
@@ -332,7 +332,7 @@ fn err_hook_wrong_env_type_2() -> Result {
 
     test()
         .run_with_hooks::<Value>(code)
-        .expect_error_code_eq("nu::shell::invalid_config")
+        .expect_error_code_eq("arbor::shell::invalid_config")
 }
 
 #[test]
@@ -351,7 +351,7 @@ fn err_hook_wrong_env_type_3() -> Result {
 
     test()
         .run_with_hooks::<Value>(code)
-        .expect_error_code_eq("nu::shell::invalid_config")
+        .expect_error_code_eq("arbor::shell::invalid_config")
 }
 
 #[test]
@@ -371,7 +371,7 @@ fn err_hook_non_boolean_condition_output() -> Result {
 
     test()
         .run_with_hooks::<Value>(code)
-        .expect_error_code_eq("nu::shell::invalid_config")
+        .expect_error_code_eq("arbor::shell::invalid_config")
 }
 
 #[test]
@@ -391,7 +391,7 @@ fn err_hook_non_condition_not_a_block() -> Result {
 
     test()
         .run_with_hooks::<Value>(code)
-        .expect_error_code_eq("nu::shell::invalid_config")
+        .expect_error_code_eq("arbor::shell::invalid_config")
 }
 
 #[test]

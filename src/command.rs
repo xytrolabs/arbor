@@ -1,10 +1,10 @@
 use lexopt::prelude::*;
-use nu_experimental as experimental_options;
-use nu_parser::escape_for_script_arg;
-use nu_protocol::{
+use arbor_experimental as experimental_options;
+use arbor_parser::escape_for_script_arg;
+use arbor_protocol::{
     LabeledError, ShellError, Span, Spanned, Value, config::TableMode, did_you_mean,
 };
-use nu_utils::{stdout_write_all_and_flush, strip_ansi_string_likely};
+use arbor_utils::{stdout_write_all_and_flush, strip_ansi_string_likely};
 #[cfg(feature = "plugin")]
 use std::path::Path;
 use std::{
@@ -327,7 +327,7 @@ const CLI_FLAGS: &[CliFlag] = &[
         ValueHint::ListString,
         "set the Rust module prefixes to include from the log output",
         CliCategory::Logging,
-        "nu --log-include nu_cli",
+        "nu --log-include arbor_cli",
     ),
     CliFlag::value(
         "log-exclude",
@@ -335,7 +335,7 @@ const CLI_FLAGS: &[CliFlag] = &[
         ValueHint::ListString,
         "set the Rust module prefixes to exclude from the log output",
         CliCategory::Logging,
-        "nu --log-exclude nu_cli",
+        "nu --log-exclude arbor_cli",
     ),
     CliFlag::switch(
         "stdin",
@@ -2178,7 +2178,7 @@ mod tests {
             let args = vec![
                 OsString::from("nu"),
                 OsString::from(log_option),
-                OsString::from("nu_cli"),
+                OsString::from("arbor_cli"),
                 OsString::from(slash_alias),
                 OsString::from("42 + 1"),
             ];

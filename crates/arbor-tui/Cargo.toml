@@ -1,0 +1,46 @@
+[package]
+authors.workspace = true
+description = "Composable terminal UI commands for Nushell"
+repository = "https://github.com/nushell/nushell/tree/main/crates/arbor-tui"
+edition.workspace = true
+license.workspace = true
+name = "arbor-tui"
+rust-version.workspace = true
+version.workspace = true
+
+[lib]
+bench = false
+
+[[test]]
+name = "tests"
+path = "tests/main.rs"
+harness = false
+
+[lints]
+workspace = true
+
+[dependencies]
+arbor-protocol = { workspace = true, features = ["os"] }
+arbor-engine = { workspace = true, features = ["os"] }
+arbor-command = { workspace = true, features = ["os"] }
+arbor-color-config.workspace = true
+arbor-explore.workspace = true
+arbor-utils.workspace = true
+arbor-system.workspace = true
+nu-ansi-term.workspace = true
+
+ansi-str = { workspace = true }
+crossterm = { workspace = true }
+lscolors = { workspace = true, default-features = false, features = [
+    "nu-ansi-term",
+] }
+mime_guess = { workspace = true }
+nucleo-matcher = { workspace = true }
+ratatui = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+typetag = { workspace = true }
+unicode-width = { workspace = true }
+
+[dev-dependencies]
+arbor-cmd-lang = { workspace = true, features = ["os"] }
+arbor-test-support = { path = "../arbor-test-support", features = ["os"] }

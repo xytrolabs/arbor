@@ -1,8 +1,8 @@
 [files]
 extend-exclude = [
     ".git/",
-    "crates/nu-command/tests/commands/**",
-    "crates/nu-cmd-extra/assets/228_themes.json",
+    "crates/arbor-command/tests/commands/**",
+    "crates/arbor-cmd-extra/assets/228_themes.json",
     "tests/fixtures/formats/",
 ]
 ignore-hidden = false

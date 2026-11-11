@@ -136,7 +136,7 @@ let executable = $'target/($target)/release/($bin)*($suffix)'
 print $'Current executable file: ($executable)'
 
 cd $src; mkdir $dist;
-rm -rf ...(glob $'target/($target)/release/*.d') ...(glob $'target/($target)/release/nu_pretty_hex*')
+rm -rf ...(glob $'target/($target)/release/*.d') ...(glob $'target/($target)/release/arbor_pretty_hex*')
 print $'(char nl)All executable files:'; hr-line
 # We have to use `print` here to make sure the command output is displayed
 print (ls -f ($executable | into glob)); sleep 1sec
@@ -146,7 +146,7 @@ print $'(char nl)Copying release files...'; hr-line
 Then you can use `plugin use` to load the plugin into your session.
 For example:
 
-> plugin add ./nu_plugin_query
+> plugin add ./arbor_plugin_query
 > plugin use query
 
 For more information, refer to https://www.nushell.sh/book/plugins.html
@@ -235,10 +235,10 @@ def fetch-less [
 
 def 'cargo-build-nu' [] {
     if $os =~ 'windows' {
-        cargo build --release --workspace --exclude nu-test-support --target $target
+        cargo build --release --workspace --exclude arbor-test-support --target $target
     } else {
-        # Exclude nu-test-support for loongarch64 to avoid build error
-        cargo build --release --workspace --exclude nu-test-support --target $target --features=static-link-openssl
+        # Exclude arbor-test-support for loongarch64 to avoid build error
+        cargo build --release --workspace --exclude arbor-test-support --target $target --features=static-link-openssl
     }
 }
 

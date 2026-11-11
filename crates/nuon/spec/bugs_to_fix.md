@@ -148,7 +148,7 @@ byte for byte still has to reproduce these until they are fixed.
     - **do not reproduce.** error on overflow. the spec already says overflow must not wrap; this
        is the implementation not matching it yet. the wrapping units are handled in the reader
        now; the saturating `ns`/`us` pair needs `parse_unit_value` in
-       `crates/nu-parser/src/parse_literals.rs` to return a `ParseError` instead of falling back
+       `crates/arbor-parser/src/parse_literals.rs` to return a `ParseError` instead of falling back
        to the saturating `num_float as i64`.
 
 - bug 9 - filesizes may be negative, and oversized ones saturate rather than erroring.

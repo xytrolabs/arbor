@@ -5,7 +5,7 @@ authors = ["The Nushell Project Developers", "Arbor contributors"]
 edition = "2024"
 rust-version = "1.97.1"
 license = "MIT"
-version = "0.117.0"
+version = "1.0.0"
 
 [package]
 authors.workspace = true
@@ -38,105 +38,105 @@ pkg-fmt = "tgz"
 pkg-fmt = "zip"
 
 [package.metadata.winresource]
-LegalCopyright = "Copyright © 2019-2026 The Nushell Project Developers"
-FileDescription = "A new type of shell"
-FileVersion = "0.117.0"
-ProductVersion = "0.117.0"
-ProductName = "Nushell"
+LegalCopyright = "Copyright © 2019-2026 The Nushell Project Developers and Arbor contributors"
+FileDescription = "Arbor — a shell for structured data"
+FileVersion = "1.0.0"
+ProductVersion = "1.0.0"
+ProductName = "Arbor"
 
 [workspace]
 members = [
-  "crates/nu_plugin_custom_values",
-  "crates/nu_plugin_example",
-  "crates/nu_plugin_formats",
-  "crates/nu_plugin_gstat",
-  "crates/nu_plugin_inc",
-  "crates/nu_plugin_polars",
-  "crates/nu_plugin_query",
-  "crates/nu_plugin_stress_internals",
-  "crates/nu-cli",
-  "crates/nu-cmd-base",
-  "crates/nu-cmd-extra",
-  "crates/nu-cmd-lang",
-  "crates/nu-cmd-plugin",
-  "crates/nu-color-config",
-  "crates/nu-config",
-  "crates/nu-command",
-  "crates/nu-dap",
-  "crates/nu-derive-value",
-  "crates/nu-engine",
-  "crates/nu-experimental",
-  "crates/nu-explore",
-  "crates/nu-tui",
-  "crates/nu-json",
-  "crates/nu-lsp",
-  "crates/nu-parser",
-  "crates/nu-plugin-core",
-  "crates/nu-plugin-engine",
-  "crates/nu-plugin-protocol",
-  "crates/nu-plugin-test-support",
-  "crates/nu-plugin",
-  "crates/nu-pretty-hex",
-  "crates/nu-protocol",
-  "crates/nu-std",
-  "crates/nu-system",
-  "crates/nu-table",
-  "crates/nu-term-grid",
-  "crates/nu-test-support",
-  "crates/nu-test-support-macros",
-  "crates/nu-utils",
-  "crates/nu-heavy-utils",
+  "crates/arbor_plugin_custom_values",
+  "crates/arbor_plugin_example",
+  "crates/arbor_plugin_formats",
+  "crates/arbor_plugin_gstat",
+  "crates/arbor_plugin_inc",
+  "crates/arbor_plugin_polars",
+  "crates/arbor_plugin_query",
+  "crates/arbor_plugin_stress_internals",
+  "crates/arbor-cli",
+  "crates/arbor-cmd-base",
+  "crates/arbor-cmd-extra",
+  "crates/arbor-cmd-lang",
+  "crates/arbor-cmd-plugin",
+  "crates/arbor-color-config",
+  "crates/arbor-config",
+  "crates/arbor-command",
+  "crates/arbor-dap",
+  "crates/arbor-derive-value",
+  "crates/arbor-engine",
+  "crates/arbor-experimental",
+  "crates/arbor-explore",
+  "crates/arbor-tui",
+  "crates/arbor-json",
+  "crates/arbor-lsp",
+  "crates/arbor-parser",
+  "crates/arbor-plugin-core",
+  "crates/arbor-plugin-engine",
+  "crates/arbor-plugin-protocol",
+  "crates/arbor-plugin-test-support",
+  "crates/arbor-plugin",
+  "crates/arbor-pretty-hex",
+  "crates/arbor-protocol",
+  "crates/arbor-std",
+  "crates/arbor-system",
+  "crates/arbor-table",
+  "crates/arbor-term-grid",
+  "crates/arbor-test-support",
+  "crates/arbor-test-support-macros",
+  "crates/arbor-utils",
+  "crates/arbor-heavy-utils",
   "crates/nuon",
-  "crates/nu-mcp",
+  "crates/arbor-mcp",
   "crates/testbins",
 ]
 
 [workspace.dependencies]
 
-nu-cli = { path = "crates/nu-cli", version = "0.117.0", default-features = false }
-nu-cmd-base = { path = "crates/nu-cmd-base", version = "0.117.0", default-features = false }
-nu-cmd-extra = { path = "crates/nu-cmd-extra", version = "0.117.0", default-features = false }
-nu-cmd-lang = { path = "crates/nu-cmd-lang", version = "0.117.0", default-features = false }
-nu-cmd-plugin = { path = "crates/nu-cmd-plugin", version = "0.117.0", default-features = false }
-nu-color-config = { path = "crates/nu-color-config", version = "0.117.0", default-features = false }
-nu-command = { path = "crates/nu-command", version = "0.117.0", default-features = false }
-nu-config = { path = "crates/nu-config", version = "0.117.0", default-features = false }
-nu-dap = { path = "crates/nu-dap", version = "0.117.0", default-features = false }
-nu-derive-value = { path = "crates/nu-derive-value", version = "0.117.0", default-features = false }
-nu-engine = { path = "crates/nu-engine", version = "0.117.0", default-features = false }
-nu-experimental = { path = "crates/nu-experimental", version = "0.117.0", default-features = false }
-nu-explore = { path = "crates/nu-explore", version = "0.117.0", default-features = false }
-nu-glob = { path = "crates/nu-glob", version = "0.117.0", default-features = false }
-nu-heavy-utils = { path = "crates/nu-heavy-utils", version = "0.117.0", default-features = false }
-nu-json = { path = "crates/nu-json", version = "0.117.0", default-features = false }
-nu-lsp = { path = "crates/nu-lsp", version = "0.117.0", default-features = false }
-nu-mcp = { path = "crates/nu-mcp", version = "0.117.0", default-features = false }
-nu-parser = { path = "crates/nu-parser", version = "0.117.0", default-features = false }
-nu-path = { path = "crates/nu-path", version = "0.117.0", default-features = false }
-nu-plugin = { path = "crates/nu-plugin", version = "0.117.0", default-features = false, features = ["local-socket"] }
-nu-plugin-core = { path = "crates/nu-plugin-core", version = "0.117.0", default-features = false }
-nu-plugin-engine = { path = "crates/nu-plugin-engine", version = "0.117.0", default-features = false }
-nu-plugin-protocol = { path = "crates/nu-plugin-protocol", version = "0.117.0", default-features = false }
-nu-plugin-test-support = { path = "crates/nu-plugin-test-support", version = "0.117.0", default-features = false }
-nu-pretty-hex = { path = "crates/nu-pretty-hex", version = "0.117.0", default-features = false }
-nu-protocol = { path = "crates/nu-protocol", version = "0.117.0", default-features = false }
-nu-std = { path = "crates/nu-std", version = "0.117.0", default-features = false }
-nu-system = { path = "crates/nu-system", version = "0.117.0", default-features = false }
-nu-table = { path = "crates/nu-table", version = "0.117.0", default-features = false }
-nu-term-grid = { path = "crates/nu-term-grid", version = "0.117.0", default-features = false }
-nu-tui = { path = "crates/nu-tui", version = "0.117.0", default-features = false }
-nu-test-support = { path = "crates/nu-test-support", version = "0.117.0", default-features = false }
-nu-test-support-macros = { path = "crates/nu-test-support-macros", version = "0.117.0", default-features = false }
-nu-utils = { path = "crates/nu-utils", version = "0.117.0", default-features = false }
-nu_plugin_custom_values = { path = "crates/nu_plugin_custom_values", version = "0.117.0", default-features = false }
-nu_plugin_example = { path = "crates/nu_plugin_example", version = "0.117.0", default-features = false }
-nu_plugin_formats = { path = "crates/nu_plugin_formats", version = "0.117.0", default-features = false }
-nu_plugin_gstat = { path = "crates/nu_plugin_gstat", version = "0.117.0", default-features = false }
-nu_plugin_inc = { path = "crates/nu_plugin_inc", version = "0.117.0", default-features = false }
-nu_plugin_polars = { path = "crates/nu_plugin_polars", version = "0.117.0", default-features = false }
-nu_plugin_query = { path = "crates/nu_plugin_query", version = "0.117.0", default-features = false }
-nu_plugin_stress_internals = { path = "crates/nu_plugin_stress_internals", version = "0.117.0", default-features = false }
-nuon = { path = "crates/nuon", version = "0.117.0", default-features = false }
+arbor-cli = { path = "crates/arbor-cli", version = "1.0.0", default-features = false }
+arbor-cmd-base = { path = "crates/arbor-cmd-base", version = "1.0.0", default-features = false }
+arbor-cmd-extra = { path = "crates/arbor-cmd-extra", version = "1.0.0", default-features = false }
+arbor-cmd-lang = { path = "crates/arbor-cmd-lang", version = "1.0.0", default-features = false }
+arbor-cmd-plugin = { path = "crates/arbor-cmd-plugin", version = "1.0.0", default-features = false }
+arbor-color-config = { path = "crates/arbor-color-config", version = "1.0.0", default-features = false }
+arbor-command = { path = "crates/arbor-command", version = "1.0.0", default-features = false }
+arbor-config = { path = "crates/arbor-config", version = "1.0.0", default-features = false }
+arbor-dap = { path = "crates/arbor-dap", version = "1.0.0", default-features = false }
+arbor-derive-value = { path = "crates/arbor-derive-value", version = "1.0.0", default-features = false }
+arbor-engine = { path = "crates/arbor-engine", version = "1.0.0", default-features = false }
+arbor-experimental = { path = "crates/arbor-experimental", version = "1.0.0", default-features = false }
+arbor-explore = { path = "crates/arbor-explore", version = "1.0.0", default-features = false }
+arbor-glob = { path = "crates/arbor-glob", version = "1.0.0", default-features = false }
+arbor-heavy-utils = { path = "crates/arbor-heavy-utils", version = "1.0.0", default-features = false }
+arbor-json = { path = "crates/arbor-json", version = "1.0.0", default-features = false }
+arbor-lsp = { path = "crates/arbor-lsp", version = "1.0.0", default-features = false }
+arbor-mcp = { path = "crates/arbor-mcp", version = "1.0.0", default-features = false }
+arbor-parser = { path = "crates/arbor-parser", version = "1.0.0", default-features = false }
+arbor-path = { path = "crates/arbor-path", version = "1.0.0", default-features = false }
+arbor-plugin = { path = "crates/arbor-plugin", version = "1.0.0", default-features = false, features = ["local-socket"] }
+arbor-plugin-core = { path = "crates/arbor-plugin-core", version = "1.0.0", default-features = false }
+arbor-plugin-engine = { path = "crates/arbor-plugin-engine", version = "1.0.0", default-features = false }
+arbor-plugin-protocol = { path = "crates/arbor-plugin-protocol", version = "1.0.0", default-features = false }
+arbor-plugin-test-support = { path = "crates/arbor-plugin-test-support", version = "1.0.0", default-features = false }
+arbor-pretty-hex = { path = "crates/arbor-pretty-hex", version = "1.0.0", default-features = false }
+arbor-protocol = { path = "crates/arbor-protocol", version = "1.0.0", default-features = false }
+arbor-std = { path = "crates/arbor-std", version = "1.0.0", default-features = false }
+arbor-system = { path = "crates/arbor-system", version = "1.0.0", default-features = false }
+arbor-table = { path = "crates/arbor-table", version = "1.0.0", default-features = false }
+arbor-term-grid = { path = "crates/arbor-term-grid", version = "1.0.0", default-features = false }
+arbor-tui = { path = "crates/arbor-tui", version = "1.0.0", default-features = false }
+arbor-test-support = { path = "crates/arbor-test-support", version = "1.0.0", default-features = false }
+arbor-test-support-macros = { path = "crates/arbor-test-support-macros", version = "1.0.0", default-features = false }
+arbor-utils = { path = "crates/arbor-utils", version = "1.0.0", default-features = false }
+arbor_plugin_custom_values = { path = "crates/arbor_plugin_custom_values", version = "1.0.0", default-features = false }
+arbor_plugin_example = { path = "crates/arbor_plugin_example", version = "1.0.0", default-features = false }
+arbor_plugin_formats = { path = "crates/arbor_plugin_formats", version = "1.0.0", default-features = false }
+arbor_plugin_gstat = { path = "crates/arbor_plugin_gstat", version = "1.0.0", default-features = false }
+arbor_plugin_inc = { path = "crates/arbor_plugin_inc", version = "1.0.0", default-features = false }
+arbor_plugin_polars = { path = "crates/arbor_plugin_polars", version = "1.0.0", default-features = false }
+arbor_plugin_query = { path = "crates/arbor_plugin_query", version = "1.0.0", default-features = false }
+arbor_plugin_stress_internals = { path = "crates/arbor_plugin_stress_internals", version = "1.0.0", default-features = false }
+nuon = { path = "crates/nuon", version = "1.0.0", default-features = false }
 
 aegis-password-generator = "0.1.1"
 alphanumeric-sort = "1.5.8"
@@ -335,27 +335,27 @@ filter_map_identity = "allow"
 workspace = true
 
 [dependencies]
-nu-cli = { workspace = true }
-nu-cmd-base = { workspace = true }
-nu-cmd-extra = { workspace = true }
-nu-cmd-lang = { workspace = true, features = ["os"] }
-nu-cmd-plugin = { workspace = true, optional = true }
-nu-command = { workspace = true, features = ["os"] }
-nu-config = { workspace = true }
-nu-engine = { workspace = true, features = ["os"] }
-nu-dap = { workspace = true, optional = true }
-nu-experimental = { workspace = true }
-nu-explore = { workspace = true }
-nu-tui = { workspace = true }
-nu-lsp = { workspace = true, optional = true }
-nu-mcp = { workspace = true, optional = true }
-nu-parser = { workspace = true }
-nu-path = { workspace = true }
-nu-plugin-engine = { workspace = true, features = ["local-socket"], optional = true }
-nu-protocol = { workspace = true, features = ["os"] }
-nu-std = { workspace = true }
-nu-system = { workspace = true }
-nu-utils = { workspace = true, features = ["os"] }
+arbor-cli = { workspace = true }
+arbor-cmd-base = { workspace = true }
+arbor-cmd-extra = { workspace = true }
+arbor-cmd-lang = { workspace = true, features = ["os"] }
+arbor-cmd-plugin = { workspace = true, optional = true }
+arbor-command = { workspace = true, features = ["os"] }
+arbor-config = { workspace = true }
+arbor-engine = { workspace = true, features = ["os"] }
+arbor-dap = { workspace = true, optional = true }
+arbor-experimental = { workspace = true }
+arbor-explore = { workspace = true }
+arbor-tui = { workspace = true }
+arbor-lsp = { workspace = true, optional = true }
+arbor-mcp = { workspace = true, optional = true }
+arbor-parser = { workspace = true }
+arbor-path = { workspace = true }
+arbor-plugin-engine = { workspace = true, features = ["local-socket"], optional = true }
+arbor-protocol = { workspace = true, features = ["os"] }
+arbor-std = { workspace = true }
+arbor-system = { workspace = true }
+arbor-utils = { workspace = true, features = ["os"] }
 reedline = { workspace = true, features = ["bashisms"] }
 
 crossterm = { workspace = true }
@@ -394,10 +394,10 @@ windows-sys = { workspace = true, features = ["Win32_System_Environment"] }
 windows-sys = { workspace = true, features = ["Win32_Foundation", "Win32_System_Threading"] }
 
 [dev-dependencies]
-nu-plugin-core = { path = "./crates/nu-plugin-core", version = "0.117.0" }
-nu-plugin-protocol = { path = "./crates/nu-plugin-protocol", version = "0.117.0" }
-nu-table = { path = "./crates/nu-table", version = "0.117.0" }
-nu-test-support = { path = "./crates/nu-test-support", features = ["os", "plugin"] }
+arbor-plugin-core = { path = "./crates/arbor-plugin-core", version = "1.0.0" }
+arbor-plugin-protocol = { path = "./crates/arbor-plugin-protocol", version = "1.0.0" }
+arbor-table = { path = "./crates/arbor-table", version = "1.0.0" }
+arbor-test-support = { path = "./crates/arbor-test-support", features = ["os", "plugin"] }
 
 assert_cmd = "2.2.2"
 dirs = { workspace = true }
@@ -425,31 +425,31 @@ full = [
 
 plugin = [
   # crates
-  "dep:nu-cmd-plugin",
-  "dep:nu-plugin-engine",
+  "dep:arbor-cmd-plugin",
+  "dep:arbor-plugin-engine",
 
   # features
-  "nu-cli/plugin",
-  "nu-cmd-lang/plugin",
-  "nu-command/plugin",
-  "nu-config/plugin",
-  "nu-engine/plugin",
-  "nu-parser/plugin",
-  "nu-protocol/plugin",
+  "arbor-cli/plugin",
+  "arbor-cmd-lang/plugin",
+  "arbor-command/plugin",
+  "arbor-config/plugin",
+  "arbor-engine/plugin",
+  "arbor-parser/plugin",
+  "arbor-protocol/plugin",
 ]
 
-dap = ["dep:nu-dap"]
+dap = ["dep:arbor-dap"]
 
-lsp = ["dep:nu-lsp"]
+lsp = ["dep:arbor-lsp"]
 
 mcp = [
-  "dep:nu-mcp",
-  "nu-mcp/mcp",
+  "dep:arbor-mcp",
+  "arbor-mcp/mcp",
 ]
 
-network = ["nu-command/network"]
-native-tls = ["nu-command/native-tls"]
-rustls-tls = ["nu-command/rustls-tls"]
+network = ["arbor-command/network"]
+native-tls = ["arbor-command/native-tls"]
+rustls-tls = ["arbor-command/rustls-tls"]
 
 default = [
   "dap",
@@ -462,7 +462,7 @@ default = [
   "trash-support",
 ]
 stable = ["default"]
-# NOTE: individual features are also passed to `nu-cmd-lang` that uses them to generate the feature matrix in the `version` command
+# NOTE: individual features are also passed to `arbor-cmd-lang` that uses them to generate the feature matrix in the `version` command
 
 # Enable to statically link OpenSSL (perl is required, to build OpenSSL https://docs.rs/openssl/latest/openssl/);
 # otherwise the system version will be used. Not enabled by default because it takes a while to build
@@ -472,18 +472,18 @@ static-link-openssl = ["dep:openssl"]
 # Missing X server/ Wayland can cause issues
 system-clipboard = [
   "reedline/system_clipboard",
-  "nu-cli/system-clipboard",
+  "arbor-cli/system-clipboard",
 ]
 
 # Stable (Default)
-trash-support = ["nu-command/trash-support"]
+trash-support = ["arbor-command/trash-support"]
 
 # SQLite commands for nushell
 sqlite = [
-  "nu-cli/sqlite",
-  "nu-command/sqlite",
-  "nu-std/sqlite",
-  "nu-protocol/sqlite",
+  "arbor-cli/sqlite",
+  "arbor-command/sqlite",
+  "arbor-std/sqlite",
+  "arbor-protocol/sqlite",
   "reedline/sqlite",
 ]
 

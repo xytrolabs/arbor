@@ -1,20 +1,20 @@
-use nu_protocol::engine::EngineState;
+use arbor_protocol::engine::EngineState;
 
 pub(crate) fn add_command_context(engine_state: EngineState) -> EngineState {
-    let engine_state = nu_cmd_lang::add_default_context(engine_state);
+    let engine_state = arbor_cmd_lang::add_default_context(engine_state);
     #[cfg(feature = "plugin")]
-    let engine_state = nu_cmd_plugin::add_plugin_command_context(engine_state);
-    let engine_state = nu_command::add_shell_command_context(engine_state);
-    let engine_state = nu_cmd_extra::add_extra_command_context(engine_state);
-    let engine_state = nu_cli::add_cli_context(engine_state);
-    let engine_state = nu_explore::add_explore_context(engine_state);
-    nu_tui::add_tui_context(engine_state)
+    let engine_state = arbor_cmd_plugin::add_plugin_command_context(engine_state);
+    let engine_state = arbor_command::add_shell_command_context(engine_state);
+    let engine_state = arbor_cmd_extra::add_extra_command_context(engine_state);
+    let engine_state = arbor_cli::add_cli_context(engine_state);
+    let engine_state = arbor_explore::add_explore_context(engine_state);
+    arbor_tui::add_tui_context(engine_state)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nu_protocol::{Category, PositionalArg};
+    use arbor_protocol::{Category, PositionalArg};
 
     #[test]
     fn arguments_end_period() {

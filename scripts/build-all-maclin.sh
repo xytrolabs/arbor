@@ -11,12 +11,12 @@ echo "---------------------------------------------------------------"
 echo ""
 
 NU_PLUGINS=(
-    'nu_plugin_example'
-    'nu_plugin_gstat'
-    'nu_plugin_inc'
-    'nu_plugin_query'
-    'nu_plugin_custom_values'
-    'nu_plugin_polars'
+    'arbor_plugin_example'
+    'arbor_plugin_gstat'
+    'arbor_plugin_inc'
+    'arbor_plugin_query'
+    'arbor_plugin_custom_values'
+    'arbor_plugin_polars'
 )
 
 echo "Building nushell"

@@ -1,28 +1,47 @@
 # Arbor — Getting Started
 
-Arbor is a **fork of [Nushell](https://github.com/nushell/nushell)** — "a new
-type of shell" where everything is structured data rather than text.
+Arbor is a **shell for structured data**: commands exchange typed values —
+records, tables, lists — rather than lines of text, so `where`, `select`,
+`sort-by` and `group-by` work on real fields instead of parsed strings.
 
-The language is unchanged from Nushell 0.117.0. This guide covers what is
-Arbor-specific: installing it, where its files live, and the features inherited
-from Waash (Arbor's predecessor) — Indent scripting, `Ctrl+B` backgrounding and
-bash control-flow blocks.
+Arbor is an independent project. It began as a rewrite of
+[Nushell](https://github.com/nushell/nushell) 0.117.0 and keeps that project's
+language and command set, because they are good and well understood. On top of
+that it adds Indent scripting, `Ctrl+B` backgrounding and bash control-flow
+blocks, and it owns its own versioning, crate names and error namespace.
 
-## Why "a fork"?
+If you already know Nushell, every command and idiom you use will work here.
 
-Arbor is not a rewrite. It tracks upstream Nushell and adds a small set of
-changes, deliberately kept mergeable so upstream updates stay cheap:
+## What Arbor owns
 
-| Change | Detail |
+Arbor is not a repackaged Nushell. It has its own identity end to end:
+
+| | Nushell | Arbor |
+|---|---|---|
+| Version | `0.117.0` | `1.0.0` |
+| Binary | `nu` | `arbor` |
+| Crates | `nu-protocol`, `nu-engine`, … | `arbor-protocol`, `arbor-engine`, … |
+| Error prefix | `Error: nu::parser::…` | `Error: arbor::parser::…` |
+| Config directory | `~/.config/nushell` | `~/.config/arbor` |
+| Data directory | `~/.local/share/nushell` | `~/.local/share/arbor` |
+| Cache directory | `~/.cache/nushell` | `~/.cache/arbor` |
+| Prompt | path only | glyph, user@host, git, load, clock |
+| Extras | — | Indent scripts, `Ctrl+B`, bash blocks |
+
+The `NOTICE` file records the exact upstream commit this work began from, and
+the `LICENSE` file (unchanged, MIT) preserves upstream's copyright.
+
+### What deliberately did *not* change
+
+Some names are part of the language rather than the build, so they were left
+alone — changing them would silently break scripts and plugins:
+
+| Kept as-is | Why |
 |---|---|
-| Binary name | `arbor` instead of `nu` |
-| Config directory | `~/.config/arbor` instead of `~/.config/nushell` |
-| Data directory | `~/.local/share/arbor` |
-| Cache directory | `~/.cache/arbor` |
-| Waash features | Indent scripts, `Ctrl+B`, bash blocks |
-
-See the `NOTICE` file in the repository for the full change list and the exact
-upstream commit.
+| `to nuon` / `from nuon` | `nuon` is a data format name, not a crate name |
+| `nu-highlight`, `nu-check` | command names used in scripts |
+| `@"nu-complete foo"` | argument-completer convention |
+| Plugin protocol `NuPlugin` | wire protocol identifier shared with plugins |
 
 ## Installing
 

@@ -1,4 +1,4 @@
-use nu_test_support::{fs::Stub::FileWithContent, prelude::*};
+use arbor_test_support::{fs::Stub::FileWithContent, prelude::*};
 use pretty_assertions::assert_eq;
 use rstest::rstest;
 
@@ -84,28 +84,28 @@ fn env_assignment_with_match() -> Result {
 fn mutate_env_file_pwd_env_var_fails() -> Result {
     test()
         .run("$env.FILE_PWD = 'foo'")
-        .expect_error_code_eq("nu::compile::automatic_env_var_set_manually")
+        .expect_error_code_eq("arbor::compile::automatic_env_var_set_manually")
 }
 
 #[test]
 fn load_env_file_pwd_env_var_fails() -> Result {
     test()
         .run("load-env { FILE_PWD : 'foo' }")
-        .expect_error_code_eq("nu::shell::automatic_env_var_set_manually")
+        .expect_error_code_eq("arbor::shell::automatic_env_var_set_manually")
 }
 
 #[test]
 fn load_env_pwd_env_var_fails() -> Result {
     test()
         .run("load-env { PWD : 'foo' }")
-        .expect_error_code_eq("nu::shell::automatic_env_var_set_manually")
+        .expect_error_code_eq("arbor::shell::automatic_env_var_set_manually")
 }
 
 #[test]
 fn automatic_env_assignment_is_case_insensitive() -> Result {
     test()
         .run("$env.PwD = 'bad'")
-        .expect_error_code_eq("nu::compile::automatic_env_var_set_manually")
+        .expect_error_code_eq("arbor::compile::automatic_env_var_set_manually")
 }
 
 #[rstest]
@@ -115,7 +115,7 @@ fn automatic_env_assignment_is_case_insensitive() -> Result {
 fn automatic_env_commands_are_case_insensitive(#[case] code: &str) -> Result {
     test()
         .run(code)
-        .expect_error_code_eq("nu::shell::automatic_env_var_set_manually")
+        .expect_error_code_eq("arbor::shell::automatic_env_var_set_manually")
 }
 
 #[rstest]
@@ -127,8 +127,8 @@ fn protected_env_names_are_checked_before_mutation(#[case] command: &str) -> Res
 }
 
 #[rstest]
-#[case::hide_env("hide-env CoNfIg", "nu::shell::cannot_hide_config_env_var")]
-#[case::load_env("load-env { CoNfIg: 'bad' }", "nu::shell::invalid_config")]
+#[case::hide_env("hide-env CoNfIg", "arbor::shell::cannot_hide_config_env_var")]
+#[case::load_env("load-env { CoNfIg: 'bad' }", "arbor::shell::invalid_config")]
 fn config_env_validation_errors(#[case] code: &str, #[case] error_code: &str) -> Result {
     test().run(code).expect_error_code_eq(error_code)
 }
@@ -246,11 +246,11 @@ fn hides_env_in_block() -> Result {
 
     test()
         .run(pipelines.join("; "))
-        .expect_error_code_eq("nu::shell::column_not_found")?;
+        .expect_error_code_eq("arbor::shell::column_not_found")?;
 
     test()
         .run_multiple(pipelines)
-        .expect_error_code_eq("nu::shell::column_not_found")
+        .expect_error_code_eq("arbor::shell::column_not_found")
 }
 
 #[test]

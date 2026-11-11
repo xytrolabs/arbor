@@ -1,6 +1,6 @@
 use miette::Diagnostic;
-use nu_protocol::test_record;
-use nu_test_support::{
+use arbor_protocol::test_record;
+use arbor_test_support::{
     fs::Stub::{FileWithContent, FileWithContentToBeTrimmed},
     prelude::*,
 };

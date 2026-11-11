@@ -10,7 +10,7 @@ pub use to::to_nuon;
 #[cfg(test)]
 mod tests {
     use chrono::DateTime;
-    use nu_protocol::{
+    use arbor_protocol::{
         BlockId, IntRange, Range, Span, Value,
         ast::{CellPath, PathMember, RangeInclusion},
         casing::Casing,

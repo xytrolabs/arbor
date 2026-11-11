@@ -1,6 +1,6 @@
 use log::{Level, LevelFilter, SetLoggerError};
-use nu_protocol::ShellError;
-use nu_protocol::shell_error::generic::GenericError;
+use arbor_protocol::ShellError;
+use arbor_protocol::shell_error::generic::GenericError;
 use simplelog::{
     Color, ColorChoice, Config, ConfigBuilder, LevelPadding, TermLogger, TerminalMode, WriteLogger,
     format_description,
@@ -104,10 +104,10 @@ pub fn configure(
 
     // Add allowed module filter
     // "perf" is a pseudo-level: it maps to LevelFilter::Info (where the perf! macro
-    // logs) but restricts the module target to "nu::perf" so only perf! output is shown.
+    // logs) but restricts the module target to "arbor::perf" so only perf! output is shown.
     // User-specified --log-include filters stack on top of this restriction.
     if is_perf {
-        builder.add_filter_allow_str("nu::perf");
+        builder.add_filter_allow_str("arbor::perf");
     }
     if let Some(include) = filters.include {
         for filter in include {

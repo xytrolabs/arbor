@@ -131,7 +131,7 @@ Tests can be found in different places:
 * command examples
 * crate-specific tests
 
-Most of the tests are built upon the `nu-test-support` crate. For testing specific features, such as running Nushell in a REPL mode, we have so called "testbins". For simple tests, you can find `run_test()` and `fail_test()` functions.
+Most of the tests are built upon the `arbor-test-support` crate. For testing specific features, such as running Nushell in a REPL mode, we have so called "testbins". For simple tests, you can find `run_test()` and `fail_test()` functions.
 
 ### Useful Commands
 
@@ -170,7 +170,7 @@ Read cargo's documentation for more details: https://doc.rust-lang.org/cargo/ref
 - Run all tests for a specific command
 
   ```nushell
-  cargo test --package nu-command --test tests -- commands::<command_name_here>
+  cargo test --package arbor-command --test tests -- commands::<command_name_here>
   ```
 
 - Check to see if there are code formatting issues

@@ -1,6 +1,6 @@
 mod commands;
 
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 
 #[test]
 fn doesnt_break_on_utf8() -> Result {

@@ -3,8 +3,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use nu_protocol::{PluginRegistryFile, PluginRegistryItem, PluginRegistryItemData, Record};
-use nu_test_support::prelude::*;
+use arbor_protocol::{PluginRegistryFile, PluginRegistryItem, PluginRegistryItemData, Record};
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 
 #[derive(Debug)]
@@ -117,7 +117,7 @@ fn plugin_add_in_nu_plugin_dirs_env() -> Result {
 #[rstest]
 #[case::unnested("test-plugin-file.msgpackz")]
 #[case::nested("nested/dirs/test-plugin-file.msgpackz")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU_PLUGIN_EXAMPLE)]
 fn plugin_add_to_custom_path(#[case] plugin_config_path_tail: &str) -> Result {
     Playground::setup(&module_path!().replace("::", "_"), |dirs, _| {

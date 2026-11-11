@@ -1,7 +1,7 @@
 use core::fmt::Write;
-use nu_engine::get_columns;
-use nu_protocol::{Range, ShellError, Span, Value, engine::EngineState};
-use nu_utils::{ObviousFloat, as_raw_string, escape_quote_string, needs_quoting};
+use arbor_engine::get_columns;
+use arbor_protocol::{Range, ShellError, Span, Value, engine::EngineState};
+use arbor_utils::{ObviousFloat, as_raw_string, escape_quote_string, needs_quoting};
 use unicode_width::UnicodeWidthStr;
 
 /// Configuration for converting Nushell [`Value`] to NUON data.

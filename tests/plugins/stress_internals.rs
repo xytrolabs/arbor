@@ -1,10 +1,10 @@
 // all tests in here are marked as serial to give your processor some room to breath while
 // executing these tests
 
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 
 const CODE_STRESS_INTERNALS_COMPLETE: &str = r#"
-    let plugin_path = (which nu_plugin_stress_internals).path.0
+    let plugin_path = (which arbor_plugin_stress_internals).path.0
     nu --no-config-file --plugins $plugin_path --commands "stress_internals" | complete
 "#;
 

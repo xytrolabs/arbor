@@ -1,4 +1,4 @@
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 
 mod cli;
 mod completions;

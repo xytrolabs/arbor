@@ -119,8 +119,8 @@ export def "test stdlib" [
     --extra-args: string = ''
 ] {
     ^cargo run -- --no-config-file -c $"
-        use crates/nu-std/testing.nu
-        testing run-tests --path crates/nu-std ($extra_args)
+        use crates/arbor-std/testing.nu
+        testing run-tests --path crates/arbor-std ($extra_args)
     "
 }
 
@@ -134,10 +134,10 @@ export def "test stdlib" [
 #
 # > the following diff breaks all of the three checks!
 # > ```diff
-# > diff --git a/crates/nu-command/src/formats/to/nuon.rs b/crates/nu-command/src/formats/to/nuon.rs
+# > diff --git a/crates/arbor-command/src/formats/to/nuon.rs b/crates/arbor-command/src/formats/to/nuon.rs
 # > index abe34c054..927d6a3de 100644
-# > --- a/crates/nu-command/src/formats/to/nuon.rs
-# > +++ b/crates/nu-command/src/formats/to/nuon.rs
+# > --- a/crates/arbor-command/src/formats/to/nuon.rs
+# > +++ b/crates/arbor-command/src/formats/to/nuon.rs
 # > @@ -131,7 +131,8 @@ pub fn value_to_string(v: &Value, span: Span) -> Result<String, ShellError> {
 # >                          }
 # >                      })
@@ -157,7 +157,7 @@ export def "test stdlib" [
 # ```nushell
 # >_ toolkit check pr
 # running `toolkit fmt`
-# Diff in /home/amtoine/.local/share/git/store/github.com/amtoine/nushell/crates/nu-command/src/formats/to/nuon.rs at line 131:
+# Diff in /home/amtoine/.local/share/git/store/github.com/amtoine/nushell/crates/arbor-command/src/formats/to/nuon.rs at line 131:
 #                          }
 #                      })
 #                      .collect();
@@ -176,20 +176,20 @@ export def "test stdlib" [
 # running `toolkit clippy`
 # ...
 # error: redundant clone
-#    --> crates/nu-command/src/formats/to/nuon.rs:134:71
+#    --> crates/arbor-command/src/formats/to/nuon.rs:134:71
 #     |
 # 134 |                 let headers_output = headers.join(&format!("x {}", "").to_string());
 #     |                                                                       ^^^^^^^^^^^^ help: remove this
 #     |
 # note: this value is dropped without further use
-#    --> crates/nu-command/src/formats/to/nuon.rs:134:52
+#    --> crates/arbor-command/src/formats/to/nuon.rs:134:52
 #     |
 # 134 |                 let headers_output = headers.join(&format!("x {}", "").to_string());
 #     |                                                    ^^^^^^^^^^^^^^^^^^^
 #     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_clone
 #     = note: `-D clippy::redundant-clone` implied by `-D warnings`
 #
-# error: could not compile `nu-command` due to previous error
+# error: could not compile `arbor-command` due to previous error
 # ```
 # - we remove the useless `.to_string()`, and in that cases, the whole format is useless, only `"x "` is useful!
 # but now the tests do not pass :sob:

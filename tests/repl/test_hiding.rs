@@ -1,4 +1,4 @@
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 
 use crate::repl::tests::{TestResult, fail_test, run_test};

@@ -4,12 +4,12 @@
 A:plugin-polars:
   - changed-files:
     - any-glob-to-any-file:
-      - crates/nu_plugin_polars/**
+      - crates/arbor_plugin_polars/**
 
 A:std-library:
   - changed-files:
     - any-glob-to-any-file:
-      - crates/nu-std/**
+      - crates/arbor-std/**
 
 A:ci:
   - changed-files:
@@ -20,21 +20,21 @@ A:ci:
 A:LSP:
   - changed-files:
     - any-glob-to-any-file:
-      - crates/nu-lsp/**
+      - crates/arbor-lsp/**
 
 A:parser:
   - changed-files:
     - any-glob-to-any-file:
-      - crates/nu-parser/**
+      - crates/arbor-parser/**
 
 A:plugins:
   - changed-files:
     - any-glob-to-any-file:
       # plugins API
-      - crates/nu-plugin/**
-      - crates/nu-plugin-core/**
-      - crates/nu-plugin-engine/**
-      - crates/nu-plugin-protocol/**
-      - crates/nu-plugin-test-support/**
+      - crates/arbor-plugin/**
+      - crates/arbor-plugin-core/**
+      - crates/arbor-plugin-engine/**
+      - crates/arbor-plugin-protocol/**
+      - crates/arbor-plugin-test-support/**
       # specific plugins (like polars)
       - crates/nu_plugin_*/**

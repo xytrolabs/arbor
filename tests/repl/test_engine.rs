@@ -1,5 +1,5 @@
 use crate::repl::tests::{TestResult, fail_test, run_test, run_test_contains};
-use nu_test_support::prelude::{TestResultExt, test};
+use arbor_test_support::prelude::{TestResultExt, test};
 use rstest::rstest;
 
 #[test]

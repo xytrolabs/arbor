@@ -1,7 +1,7 @@
-use nu_path::canonicalize_with;
-use nu_test_support::fs::Stub::EmptyFile;
-use nu_test_support::playground::Playground;
-use nu_test_support::prelude::*;
+use arbor_path::canonicalize_with;
+use arbor_test_support::fs::Stub::EmptyFile;
+use arbor_test_support::playground::Playground;
+use arbor_test_support::prelude::*;
 use pretty_assertions::assert_eq;
 use std::path::Path;
 
@@ -437,7 +437,7 @@ fn canonicalize_unc() {
     // Ensure that canonicalizing UNC paths does not turn them verbatim.
     // Assumes the C drive exists and that the `localhost` UNC path works.
     let actual =
-        nu_path::canonicalize_with(r"\\localhost\c$", ".").expect("failed to canonicalize");
+        arbor_path::canonicalize_with(r"\\localhost\c$", ".").expect("failed to canonicalize");
     let expected = Path::new(r"\\localhost\c$");
     assert_eq!(actual, expected);
 }

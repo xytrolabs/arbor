@@ -1,5 +1,5 @@
-use nu_path::expand_path_with;
-use nu_test_support::playground::Playground;
+use arbor_path::expand_path_with;
+use arbor_test_support::playground::Playground;
 use pretty_assertions::assert_eq;
 use std::path::PathBuf;
 

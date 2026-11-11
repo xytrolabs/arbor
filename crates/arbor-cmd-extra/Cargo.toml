@@ -1,0 +1,58 @@
+[package]
+authors.workspace = true
+description = "Nushell's extra commands that are not part of the 1.0 api standard."
+edition.workspace = true
+license.workspace = true
+name = "arbor-cmd-extra"
+repository = "https://github.com/nushell/nushell/tree/main/crates/arbor-cmd-extra"
+rust-version.workspace = true
+version.workspace = true
+autotests = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+bench = false
+harness = false
+
+[lints]
+workspace = true
+
+[[test]]
+name = "tests"
+path = "tests/main.rs"
+harness = false
+
+[dependencies]
+arbor-cmd-base.workspace = true
+arbor-engine.workspace = true
+arbor-heavy-utils = { workspace = true, features = ["endian"] }
+arbor-json.workspace = true
+arbor-parser.workspace = true
+arbor-pretty-hex.workspace = true
+arbor-protocol.workspace = true
+arbor-utils.workspace = true
+
+# Potential dependencies for extras
+heck = { workspace = true }
+num-traits = { workspace = true }
+nu-ansi-term = { workspace = true }
+fancy-regex = { workspace = true }
+serde = { workspace = true }
+serde_urlencoded = { workspace = true }
+v_htmlescape = { workspace = true }
+itertools = { workspace = true }
+mime = { workspace = true }
+
+[dev-dependencies]
+# "os" feature required for testing examples
+arbor-cmd-lang = { workspace = true, features = ["os"] }
+arbor-command = { workspace = true, features = ["os"] }
+arbor-test-support = { path = "../arbor-test-support" }
+
+[build-dependencies]
+arbor-protocol.workspace = true
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+quote = { workspace = true }

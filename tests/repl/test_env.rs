@@ -1,6 +1,6 @@
 use rstest::rstest;
 
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 
 #[rstest]
 #[case::env_shorthand("FOO=BAZ $env.FOO", "BAZ")]
@@ -31,5 +31,5 @@ fn needs_nu_processes(#[case] child_code: &str, #[case] expect: impl IntoValue) 
 fn defined_twice_error() -> Result {
     test()
         .run("FOO=BAZ FOO=MOO $env.FOO")
-        .expect_error_code_eq("nu::shell::column_defined_twice")
+        .expect_error_code_eq("arbor::shell::column_defined_twice")
 }

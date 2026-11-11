@@ -1,7 +1,7 @@
 use itertools::Itertools;
-use nu_test_support::fs::Stub::FileWithContentToBeTrimmed;
-use nu_test_support::playground::Playground;
-use nu_test_support::prelude::*;
+use arbor_test_support::fs::Stub::FileWithContentToBeTrimmed;
+use arbor_test_support::playground::Playground;
+use arbor_test_support::prelude::*;
 use pretty_assertions::{assert_eq, assert_matches};
 use rstest::rstest;
 
@@ -245,7 +245,7 @@ fn let_variable() -> Result {
 fn let_doesnt_leak() -> Result {
     test()
         .run("do { let x = 5 }; echo $x")
-        .expect_error_code_eq("nu::parser::variable_not_found")
+        .expect_error_code_eq("arbor::parser::variable_not_found")
 }
 
 #[test]
@@ -303,7 +303,7 @@ fn unlet_env_variable() -> Result {
 fn unlet_nonexistent_variable() -> Result {
     test()
         .run("hide-env NONEXISTENT_VARIABLE")
-        .expect_error_code_eq("nu::shell::env_variable_not_found")
+        .expect_error_code_eq("arbor::shell::env_variable_not_found")
 }
 
 #[test]
@@ -526,7 +526,7 @@ fn proper_shadow_let_aliases() -> Result {
 fn block_params_override() -> Result {
     test()
         .run("[1, 2, 3] | each { |a| echo $it }")
-        .expect_error_code_eq("nu::parser::variable_not_found")
+        .expect_error_code_eq("arbor::parser::variable_not_found")
 }
 
 #[test]
@@ -626,7 +626,7 @@ fn bad_operator() -> Result {
 fn index_out_of_bounds() -> Result {
     test()
         .run("let foo = [1, 2, 3]; echo $foo.5")
-        .expect_error_code_eq("nu::shell::access_beyond_end")
+        .expect_error_code_eq("arbor::shell::access_beyond_end")
 }
 
 #[test]
@@ -761,7 +761,7 @@ fn filesize_math(#[case] code: &str, #[case] filesize: u32) -> Result {
 fn cannot_divide_by_filesize() -> Result {
     test()
         .run("100 / 10kB")
-        .expect_error_code_eq("nu::parser::operator_incompatible_types")
+        .expect_error_code_eq("arbor::parser::operator_incompatible_types")
 }
 
 #[test]
@@ -895,7 +895,7 @@ fn hide_alias_hides_alias() -> Result {
 }
 
 mod parse {
-    use nu_test_support::prelude::*;
+    use arbor_test_support::prelude::*;
     use pretty_assertions::assert_matches;
 
     /*
@@ -938,12 +938,12 @@ mod parse {
     fn ensure_backticks_are_bareword_command() -> Result {
         test()
             .run("`8abc123`")
-            .expect_error_code_eq("nu::shell::external_command")
+            .expect_error_code_eq("arbor::shell::external_command")
     }
 }
 
 mod tilde_expansion {
-    use nu_test_support::prelude::*;
+    use arbor_test_support::prelude::*;
 
     #[test]
     #[should_panic]
@@ -960,7 +960,7 @@ mod tilde_expansion {
 }
 
 mod variable_scoping {
-    use nu_test_support::prelude::*;
+    use arbor_test_support::prelude::*;
     use rstest::rstest;
 
     #[rustfmt::skip]

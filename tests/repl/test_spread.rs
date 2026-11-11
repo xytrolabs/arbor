@@ -1,6 +1,6 @@
 use miette::Diagnostic;
-use nu_protocol::{ParseError, ShellError};
-use nu_test_support::prelude::*;
+use arbor_protocol::{ParseError, ShellError};
+use arbor_test_support::prelude::*;
 use pretty_assertions::assert_matches;
 use rstest::rstest;
 

@@ -1,13 +1,13 @@
 use fancy_regex::Regex;
-use nu_protocol::PipelineData;
-use nu_test_support::{fs::Stub::FileWithContent, prelude::*, tester::TestError};
+use arbor_protocol::PipelineData;
+use arbor_test_support::{fs::Stub::FileWithContent, prelude::*, tester::TestError};
 use rstest::rstest;
 
 #[test]
 fn record_with_redefined_key() -> Result {
     test()
         .run("{x: 1, x: 2}")
-        .expect_error_code_eq("nu::parser::column_defined_twice")
+        .expect_error_code_eq("arbor::parser::column_defined_twice")
 }
 
 #[test]
@@ -119,7 +119,7 @@ fn run_file_parse_error() -> Result {
     "#,
     "42pass[foo]30"
 )]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[env(NU_TEST_LOCALE_OVERRIDE = "en_US.UTF-8")]
 fn eval_value_eq(#[case] source: &str, #[case] expected: impl IntoValue) -> Result {
     test().run(source).expect_value_eq(expected)
@@ -202,14 +202,14 @@ fn external_call_redirect_file() -> Result {
 fn let_variable_mutate_error() -> Result {
     test()
         .run("let foo = 'test'; $foo = 'bar'; $foo")
-        .expect_error_code_eq("nu::parser::assignment_requires_mutable_variable")
+        .expect_error_code_eq("arbor::parser::assignment_requires_mutable_variable")
 }
 
 #[test]
 fn constant_assign_error() -> Result {
     test()
         .run("const foo = 1 + 2; $foo = 4; $foo")
-        .expect_error_code_eq("nu::parser::assignment_requires_mutable_variable")
+        .expect_error_code_eq("arbor::parser::assignment_requires_mutable_variable")
 }
 
 #[test]

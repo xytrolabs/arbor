@@ -244,6 +244,917 @@ dependencies = [
 ]
 
 [[package]]
+name = "arbor-cli"
+version = "1.0.0"
+dependencies = [
+ "arbor-cmd-base",
+ "arbor-cmd-lang",
+ "arbor-color-config",
+ "arbor-command",
+ "arbor-config",
+ "arbor-engine",
+ "arbor-experimental",
+ "arbor-glob",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-plugin-engine",
+ "arbor-protocol",
+ "arbor-std",
+ "arbor-test-support",
+ "arbor-utils",
+ "chrono",
+ "crossterm",
+ "fancy-regex",
+ "is_executable",
+ "log",
+ "lru 0.19.0",
+ "lscolors",
+ "miette 7.6.0",
+ "nu-ansi-term",
+ "nucleo-matcher",
+ "parking_lot",
+ "percent-encoding",
+ "reedline",
+ "rstest",
+ "strum",
+ "sysinfo",
+ "tempfile",
+ "unicode-segmentation",
+ "unicode-width 0.2.2",
+ "url",
+ "uuid",
+ "which 8.0.6",
+]
+
+[[package]]
+name = "arbor-cmd-base"
+version = "1.0.0"
+dependencies = [
+ "arbor-engine",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-protocol",
+ "indexmap 2.14.1",
+ "miette 7.6.0",
+]
+
+[[package]]
+name = "arbor-cmd-extra"
+version = "1.0.0"
+dependencies = [
+ "arbor-cmd-base",
+ "arbor-cmd-lang",
+ "arbor-command",
+ "arbor-engine",
+ "arbor-heavy-utils",
+ "arbor-json",
+ "arbor-parser",
+ "arbor-pretty-hex",
+ "arbor-protocol",
+ "arbor-test-support",
+ "arbor-utils",
+ "fancy-regex",
+ "heck",
+ "itertools 0.15.0",
+ "mime",
+ "nu-ansi-term",
+ "num-traits",
+ "quote",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "v_htmlescape",
+]
+
+[[package]]
+name = "arbor-cmd-lang"
+version = "1.0.0"
+dependencies = [
+ "arbor-cmd-base",
+ "arbor-engine",
+ "arbor-experimental",
+ "arbor-parser",
+ "arbor-protocol",
+ "arbor-test-support",
+ "arbor-utils",
+ "itertools 0.15.0",
+ "miette 7.6.0",
+ "quickcheck",
+ "quickcheck_macros",
+ "semver",
+ "shadow-rs",
+]
+
+[[package]]
+name = "arbor-cmd-plugin"
+version = "1.0.0"
+dependencies = [
+ "arbor-engine",
+ "arbor-path",
+ "arbor-plugin-engine",
+ "arbor-protocol",
+ "itertools 0.15.0",
+]
+
+[[package]]
+name = "arbor-color-config"
+version = "1.0.0"
+dependencies = [
+ "arbor-engine",
+ "arbor-json",
+ "arbor-protocol",
+ "arbor-test-support",
+ "nu-ansi-term",
+ "serde",
+]
+
+[[package]]
+name = "arbor-command"
+version = "1.0.0"
+dependencies = [
+ "aegis-password-generator",
+ "alphanumeric-sort",
+ "ansi-str",
+ "ansiopt",
+ "arboard",
+ "arbor-cmd-base",
+ "arbor-cmd-lang",
+ "arbor-color-config",
+ "arbor-config",
+ "arbor-engine",
+ "arbor-experimental",
+ "arbor-glob",
+ "arbor-heavy-utils",
+ "arbor-json",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-pretty-hex",
+ "arbor-protocol",
+ "arbor-system",
+ "arbor-table",
+ "arbor-term-grid",
+ "arbor-test-support",
+ "arbor-utils",
+ "base64 0.23.1",
+ "bracoxide",
+ "brotli 9.1.1",
+ "byteorder",
+ "bytesize",
+ "calamine",
+ "chardetng",
+ "chrono",
+ "chrono-humanize",
+ "chrono-tz",
+ "crossterm",
+ "csv",
+ "data-encoding",
+ "devicons",
+ "digest 0.11.3",
+ "dirs 7.0.0",
+ "dns-lookup",
+ "encoding_rs",
+ "fancy-regex",
+ "fff-search",
+ "filesize",
+ "filetime",
+ "fluent",
+ "getrandom 0.4.2",
+ "http",
+ "human-date-parser",
+ "indexmap 2.14.1",
+ "indicatif",
+ "indoc",
+ "itertools 0.15.0",
+ "jiff",
+ "kdl 6.7.1",
+ "log",
+ "lscolors",
+ "md-5 0.11.0",
+ "mime",
+ "mime_guess",
+ "mockito",
+ "mq-markdown",
+ "multipart-rs",
+ "native-tls",
+ "ndarray",
+ "nix 0.31.3",
+ "notify-debouncer-full",
+ "nu-ansi-term",
+ "nucleo-matcher",
+ "num-format",
+ "num-traits",
+ "nuon",
+ "oem_cp",
+ "open",
+ "os_pipe",
+ "parse_datetime",
+ "pathdiff",
+ "percent-encoding",
+ "pretty_assertions",
+ "print-positions",
+ "pure-rust-locales",
+ "quick-xml 0.42.0",
+ "rand 0.10.2",
+ "rand_chacha 0.10.0",
+ "rayon",
+ "reedline",
+ "rmp",
+ "roxmltree",
+ "rstest",
+ "rstest_reuse",
+ "rusqlite",
+ "rustls",
+ "rustls-native-certs",
+ "scopeguard",
+ "semver",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "sha2 0.11.0",
+ "strum",
+ "sysinfo",
+ "tabled",
+ "tempfile",
+ "toml",
+ "toml_edit",
+ "trash",
+ "typetag",
+ "umask",
+ "unicode-segmentation",
+ "unicode-width 0.2.2",
+ "ureq",
+ "url",
+ "uu_cp",
+ "uu_mkdir",
+ "uu_mktemp",
+ "uu_mv",
+ "uu_touch",
+ "uu_uname",
+ "uu_whoami",
+ "uucore",
+ "uuid",
+ "v_htmlescape",
+ "wax",
+ "web-time",
+ "webpki-roots",
+ "which 8.0.6",
+ "win_uds",
+ "windows 0.62.2",
+ "winreg",
+]
+
+[[package]]
+name = "arbor-config"
+version = "1.0.0"
+dependencies = [
+ "arbor-path",
+ "arbor-test-support",
+ "derive_more 2.1.1",
+ "derive_setters",
+ "dirs 7.0.0",
+ "tempfile",
+ "thiserror 2.0.20",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "arbor-dap"
+version = "1.0.0"
+dependencies = [
+ "arbor-cmd-lang",
+ "arbor-command",
+ "arbor-engine",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-protocol",
+ "arbor-test-support",
+ "arbor-utils",
+ "chrono",
+ "derive_more 2.1.1",
+ "libc",
+ "miette 7.6.0",
+ "parking_lot",
+ "pretty_assertions",
+ "rstest",
+ "serde",
+ "serde_json",
+ "typetag",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "arbor-derive-value"
+version = "1.0.0"
+dependencies = [
+ "heck",
+ "proc-macro-error3",
+ "proc-macro2",
+ "quote",
+ "syn 3.0.4",
+]
+
+[[package]]
+name = "arbor-engine"
+version = "1.0.0"
+dependencies = [
+ "arbor-experimental",
+ "arbor-glob",
+ "arbor-path",
+ "arbor-protocol",
+ "arbor-test-support",
+ "arbor-utils",
+ "fancy-regex",
+ "log",
+ "rstest",
+]
+
+[[package]]
+name = "arbor-experimental"
+version = "1.0.0"
+dependencies = [
+ "itertools 0.15.0",
+ "thiserror 2.0.20",
+]
+
+[[package]]
+name = "arbor-explore"
+version = "1.0.0"
+dependencies = [
+ "ansi-str",
+ "anyhow",
+ "arbor-color-config",
+ "arbor-config",
+ "arbor-engine",
+ "arbor-json",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-pretty-hex",
+ "arbor-protocol",
+ "arbor-table",
+ "arbor-utils",
+ "crossterm",
+ "edtui",
+ "fancy-regex",
+ "log",
+ "lscolors",
+ "nu-ansi-term",
+ "ratatui",
+ "serde_json",
+ "strip-ansi-escapes",
+ "tui-tree-widget",
+ "unicode-segmentation",
+ "unicode-width 0.2.2",
+]
+
+[[package]]
+name = "arbor-glob"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "arbor-experimental",
+ "doc-comment",
+ "log",
+ "rayon",
+]
+
+[[package]]
+name = "arbor-heavy-utils"
+version = "1.0.0"
+dependencies = [
+ "arbor-protocol",
+ "arbor-test-support",
+ "arbor-utils",
+ "base64 0.23.1",
+ "better_default",
+ "chrono",
+ "derive_setters",
+ "indoc",
+ "miette 7.6.0",
+ "pastey",
+ "regex",
+ "rstest",
+ "scopeguard",
+ "serde",
+ "serde-saphyr",
+ "strum",
+]
+
+[[package]]
+name = "arbor-json"
+version = "1.0.0"
+dependencies = [
+ "arbor-path",
+ "arbor-protocol",
+ "arbor-test-support",
+ "arbor-utils",
+ "fancy-regex",
+ "linked-hash-map",
+ "num-traits",
+ "pretty_assertions",
+ "rstest",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "arbor-lsp"
+version = "1.0.0"
+dependencies = [
+ "arbor-cli",
+ "arbor-cmd-lang",
+ "arbor-command",
+ "arbor-engine",
+ "arbor-experimental",
+ "arbor-glob",
+ "arbor-parser",
+ "arbor-protocol",
+ "arbor-std",
+ "arbor-test-support",
+ "arbor-utils",
+ "assert-json-diff",
+ "crossbeam-channel",
+ "fancy-regex",
+ "lsp-server",
+ "lsp-textdocument",
+ "lsp-types",
+ "memchr",
+ "miette 7.6.0",
+ "nucleo-matcher",
+ "rstest",
+ "serde",
+ "serde_json",
+ "url",
+]
+
+[[package]]
+name = "arbor-mcp"
+version = "1.0.0"
+dependencies = [
+ "arbor-cmd-lang",
+ "arbor-engine",
+ "arbor-json",
+ "arbor-parser",
+ "arbor-protocol",
+ "bytes",
+ "chrono",
+ "futures",
+ "hyper-util",
+ "indoc",
+ "miette 7.6.0",
+ "nix 0.31.3",
+ "nuon",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "arbor-parser"
+version = "1.0.0"
+dependencies = [
+ "arbor-engine",
+ "arbor-experimental",
+ "arbor-path",
+ "arbor-plugin-engine",
+ "arbor-protocol",
+ "arbor-utils",
+ "chrono",
+ "itertools 0.15.0",
+ "log",
+ "memchr",
+ "rstest",
+ "rustc-hash",
+ "semver",
+ "serde_json",
+]
+
+[[package]]
+name = "arbor-path"
+version = "1.0.0"
+dependencies = [
+ "dirs 7.0.0",
+ "omnipath",
+ "pwd",
+ "ref-cast",
+]
+
+[[package]]
+name = "arbor-plugin"
+version = "1.0.0"
+dependencies = [
+ "arbor-engine",
+ "arbor-plugin-core",
+ "arbor-plugin-protocol",
+ "arbor-protocol",
+ "arbor-utils",
+ "log",
+ "nix 0.31.3",
+ "serde",
+ "thiserror 2.0.20",
+ "typetag",
+]
+
+[[package]]
+name = "arbor-plugin-core"
+version = "1.0.0"
+dependencies = [
+ "arbor-plugin-protocol",
+ "arbor-protocol",
+ "arbor-utils",
+ "interprocess",
+ "log",
+ "rmp-serde",
+ "serde",
+ "serde_json",
+ "windows 0.62.2",
+]
+
+[[package]]
+name = "arbor-plugin-engine"
+version = "1.0.0"
+dependencies = [
+ "arbor-engine",
+ "arbor-plugin-core",
+ "arbor-plugin-protocol",
+ "arbor-protocol",
+ "arbor-system",
+ "arbor-utils",
+ "log",
+ "serde",
+ "typetag",
+ "windows 0.62.2",
+]
+
+[[package]]
+name = "arbor-plugin-protocol"
+version = "1.0.0"
+dependencies = [
+ "arbor-protocol",
+ "arbor-utils",
+ "rmp-serde",
+ "semver",
+ "serde",
+ "typetag",
+]
+
+[[package]]
+name = "arbor-plugin-test-support"
+version = "1.0.0"
+dependencies = [
+ "arbor-cmd-lang",
+ "arbor-engine",
+ "arbor-parser",
+ "arbor-plugin",
+ "arbor-plugin-core",
+ "arbor-plugin-engine",
+ "arbor-plugin-protocol",
+ "arbor-protocol",
+ "nu-ansi-term",
+ "serde",
+ "similar 3.2.0",
+ "typetag",
+]
+
+[[package]]
+name = "arbor-pretty-hex"
+version = "1.0.0"
+dependencies = [
+ "heapless",
+ "nu-ansi-term",
+ "rand 0.10.2",
+]
+
+[[package]]
+name = "arbor-protocol"
+version = "1.0.0"
+dependencies = [
+ "arbor-config",
+ "arbor-derive-value",
+ "arbor-experimental",
+ "arbor-glob",
+ "arbor-path",
+ "arbor-system",
+ "arbor-test-support",
+ "arbor-utils",
+ "brotli 9.1.1",
+ "bstr",
+ "bytes",
+ "chrono",
+ "chrono-humanize",
+ "derive_more 2.1.1",
+ "dirs 7.0.0",
+ "dirs-sys 0.5.0",
+ "fancy-regex",
+ "heck",
+ "humantime",
+ "indexmap 2.14.1",
+ "indoc",
+ "itertools 0.15.0",
+ "log",
+ "lru 0.19.0",
+ "memchr",
+ "miette 7.6.0",
+ "nix 0.31.3",
+ "num-format",
+ "os_pipe",
+ "pretty_assertions",
+ "rmp-serde",
+ "rstest",
+ "rustc-hash",
+ "semver",
+ "serde",
+ "serde_json",
+ "strum",
+ "strum_macros",
+ "tempfile",
+ "thiserror 2.0.20",
+ "typetag",
+ "web-time",
+ "windows 0.62.2",
+ "windows-sys 0.61.2",
+ "winnow 1.0.4",
+]
+
+[[package]]
+name = "arbor-std"
+version = "1.0.0"
+dependencies = [
+ "arbor-engine",
+ "arbor-parser",
+ "arbor-protocol",
+ "log",
+ "miette 7.6.0",
+]
+
+[[package]]
+name = "arbor-system"
+version = "1.0.0"
+dependencies = [
+ "arbor-utils",
+ "itertools 0.15.0",
+ "libc",
+ "libproc",
+ "log",
+ "mach2",
+ "nix 0.31.3",
+ "ntapi",
+ "procfs",
+ "sysinfo",
+ "uucore",
+ "web-time",
+ "windows 0.62.2",
+]
+
+[[package]]
+name = "arbor-table"
+version = "1.0.0"
+dependencies = [
+ "arbor-color-config",
+ "arbor-engine",
+ "arbor-protocol",
+ "arbor-utils",
+ "fancy-regex",
+ "nu-ansi-term",
+ "tabled",
+]
+
+[[package]]
+name = "arbor-term-grid"
+version = "1.0.0"
+dependencies = [
+ "arbor-utils",
+ "unicode-width 0.2.2",
+]
+
+[[package]]
+name = "arbor-test-support"
+version = "1.0.0"
+dependencies = [
+ "arbor-cli",
+ "arbor-cmd-base",
+ "arbor-cmd-extra",
+ "arbor-cmd-lang",
+ "arbor-cmd-plugin",
+ "arbor-command",
+ "arbor-engine",
+ "arbor-experimental",
+ "arbor-glob",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-plugin-core",
+ "arbor-plugin-engine",
+ "arbor-protocol",
+ "arbor-std",
+ "arbor-test-support-macros",
+ "arbor-tui",
+ "arbor-utils",
+ "bytes",
+ "derive_more 2.1.1",
+ "gatekeeper",
+ "indoc",
+ "itertools 0.15.0",
+ "kitest",
+ "lexopt",
+ "linkme",
+ "miette 7.6.0",
+ "nu-ansi-term",
+ "num-format",
+ "parking_lot",
+ "pastey",
+ "rstest",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.20",
+ "which 8.0.6",
+]
+
+[[package]]
+name = "arbor-test-support-macros"
+version = "1.0.0"
+dependencies = [
+ "arbor-experimental",
+ "heck",
+ "proc-macro-error3",
+ "proc-macro2",
+ "quote",
+ "syn 3.0.4",
+]
+
+[[package]]
+name = "arbor-tui"
+version = "1.0.0"
+dependencies = [
+ "ansi-str",
+ "arbor-cmd-lang",
+ "arbor-color-config",
+ "arbor-command",
+ "arbor-engine",
+ "arbor-explore",
+ "arbor-protocol",
+ "arbor-system",
+ "arbor-test-support",
+ "arbor-utils",
+ "crossterm",
+ "lscolors",
+ "mime_guess",
+ "nu-ansi-term",
+ "nucleo-matcher",
+ "ratatui",
+ "serde",
+ "typetag",
+ "unicode-width 0.2.2",
+]
+
+[[package]]
+name = "arbor-utils"
+version = "1.0.0"
+dependencies = [
+ "byteyarn",
+ "crossterm",
+ "crossterm_winapi",
+ "derive_more 2.1.1",
+ "fancy-regex",
+ "lean_string",
+ "log",
+ "lscolors",
+ "memchr",
+ "nix 0.31.3",
+ "num-format",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "strip-ansi-escapes",
+ "sys-locale",
+ "unicase",
+ "web-time",
+]
+
+[[package]]
+name = "arbor_plugin_custom_values"
+version = "1.0.0"
+dependencies = [
+ "arbor-plugin",
+ "arbor-plugin-test-support",
+ "arbor-protocol",
+ "serde",
+ "typetag",
+]
+
+[[package]]
+name = "arbor_plugin_example"
+version = "1.0.0"
+dependencies = [
+ "arbor-cmd-lang",
+ "arbor-plugin",
+ "arbor-plugin-test-support",
+ "arbor-protocol",
+]
+
+[[package]]
+name = "arbor_plugin_formats"
+version = "1.0.0"
+dependencies = [
+ "arbor-plugin",
+ "arbor-plugin-test-support",
+ "arbor-protocol",
+ "chrono",
+ "eml-parser",
+ "ical",
+ "indexmap 2.14.1",
+ "plist",
+ "rust-ini",
+]
+
+[[package]]
+name = "arbor_plugin_gstat"
+version = "1.0.0"
+dependencies = [
+ "arbor-plugin",
+ "arbor-protocol",
+ "git2",
+ "tempfile",
+]
+
+[[package]]
+name = "arbor_plugin_inc"
+version = "1.0.0"
+dependencies = [
+ "arbor-plugin",
+ "arbor-protocol",
+ "semver",
+]
+
+[[package]]
+name = "arbor_plugin_polars"
+version = "1.0.0"
+dependencies = [
+ "arbor-cmd-lang",
+ "arbor-command",
+ "arbor-engine",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-plugin",
+ "arbor-plugin-test-support",
+ "arbor-protocol",
+ "arbor-utils",
+ "aws-config",
+ "aws-credential-types",
+ "chrono",
+ "chrono-tz",
+ "env_logger",
+ "fancy-regex",
+ "hashbrown 0.17.1",
+ "indexmap 2.14.1",
+ "log",
+ "num",
+ "planus",
+ "polars",
+ "polars-arrow",
+ "polars-compute",
+ "polars-io",
+ "polars-lazy",
+ "polars-ops",
+ "polars-plan",
+ "polars-utils",
+ "serde",
+ "sqlparser 0.61.0",
+ "tempfile",
+ "tokio",
+ "typetag",
+ "url",
+ "uuid",
+]
+
+[[package]]
+name = "arbor_plugin_query"
+version = "1.0.0"
+dependencies = [
+ "arbor-plugin",
+ "arbor-protocol",
+ "gjson",
+ "scraper",
+ "serde",
+ "serde_json",
+ "sxd-document",
+ "sxd-xpath",
+ "webpage",
+]
+
+[[package]]
+name = "arbor_plugin_stress_internals"
+version = "1.0.0"
+dependencies = [
+ "interprocess",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "arc-swap"
 version = "1.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4650,8 +5561,33 @@ dependencies = [
 
 [[package]]
 name = "nu"
-version = "0.117.0"
+version = "1.0.0"
 dependencies = [
+ "arbor-cli",
+ "arbor-cmd-base",
+ "arbor-cmd-extra",
+ "arbor-cmd-lang",
+ "arbor-cmd-plugin",
+ "arbor-command",
+ "arbor-config",
+ "arbor-dap",
+ "arbor-engine",
+ "arbor-experimental",
+ "arbor-explore",
+ "arbor-lsp",
+ "arbor-mcp",
+ "arbor-parser",
+ "arbor-path",
+ "arbor-plugin-core",
+ "arbor-plugin-engine",
+ "arbor-plugin-protocol",
+ "arbor-protocol",
+ "arbor-std",
+ "arbor-system",
+ "arbor-table",
+ "arbor-test-support",
+ "arbor-tui",
+ "arbor-utils",
  "assert_cmd",
  "crossterm",
  "ctrlc",
@@ -4663,31 +5599,6 @@ dependencies = [
  "miette 7.6.0",
  "multipart-rs",
  "nix 0.31.3",
- "nu-cli",
- "nu-cmd-base",
- "nu-cmd-extra",
- "nu-cmd-lang",
- "nu-cmd-plugin",
- "nu-command",
- "nu-config",
- "nu-dap",
- "nu-engine",
- "nu-experimental",
- "nu-explore",
- "nu-lsp",
- "nu-mcp",
- "nu-parser",
- "nu-path",
- "nu-plugin-core",
- "nu-plugin-engine",
- "nu-plugin-protocol",
- "nu-protocol",
- "nu-std",
- "nu-system",
- "nu-table",
- "nu-test-support",
- "nu-tui",
- "nu-utils",
  "openssl",
  "pretty_assertions",
  "reedline",
@@ -4709,917 +5620,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "nu-cli"
-version = "0.117.0"
-dependencies = [
- "chrono",
- "crossterm",
- "fancy-regex",
- "is_executable",
- "log",
- "lru 0.19.0",
- "lscolors",
- "miette 7.6.0",
- "nu-ansi-term",
- "nu-cmd-base",
- "nu-cmd-lang",
- "nu-color-config",
- "nu-command",
- "nu-config",
- "nu-engine",
- "nu-experimental",
- "nu-glob",
- "nu-parser",
- "nu-path",
- "nu-plugin-engine",
- "nu-protocol",
- "nu-std",
- "nu-test-support",
- "nu-utils",
- "nucleo-matcher",
- "parking_lot",
- "percent-encoding",
- "reedline",
- "rstest",
- "strum",
- "sysinfo",
- "tempfile",
- "unicode-segmentation",
- "unicode-width 0.2.2",
- "url",
- "uuid",
- "which 8.0.6",
-]
-
-[[package]]
-name = "nu-cmd-base"
-version = "0.117.0"
-dependencies = [
- "indexmap 2.14.1",
- "miette 7.6.0",
- "nu-engine",
- "nu-parser",
- "nu-path",
- "nu-protocol",
-]
-
-[[package]]
-name = "nu-cmd-extra"
-version = "0.117.0"
-dependencies = [
- "fancy-regex",
- "heck",
- "itertools 0.15.0",
- "mime",
- "nu-ansi-term",
- "nu-cmd-base",
- "nu-cmd-lang",
- "nu-command",
- "nu-engine",
- "nu-heavy-utils",
- "nu-json",
- "nu-parser",
- "nu-pretty-hex",
- "nu-protocol",
- "nu-test-support",
- "nu-utils",
- "num-traits",
- "quote",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "v_htmlescape",
-]
-
-[[package]]
-name = "nu-cmd-lang"
-version = "0.117.0"
-dependencies = [
- "itertools 0.15.0",
- "miette 7.6.0",
- "nu-cmd-base",
- "nu-engine",
- "nu-experimental",
- "nu-parser",
- "nu-protocol",
- "nu-test-support",
- "nu-utils",
- "quickcheck",
- "quickcheck_macros",
- "semver",
- "shadow-rs",
-]
-
-[[package]]
-name = "nu-cmd-plugin"
-version = "0.117.0"
-dependencies = [
- "itertools 0.15.0",
- "nu-engine",
- "nu-path",
- "nu-plugin-engine",
- "nu-protocol",
-]
-
-[[package]]
-name = "nu-color-config"
-version = "0.117.0"
-dependencies = [
- "nu-ansi-term",
- "nu-engine",
- "nu-json",
- "nu-protocol",
- "nu-test-support",
- "serde",
-]
-
-[[package]]
-name = "nu-command"
-version = "0.117.0"
-dependencies = [
- "aegis-password-generator",
- "alphanumeric-sort",
- "ansi-str",
- "ansiopt",
- "arboard",
- "base64 0.23.1",
- "bracoxide",
- "brotli 9.1.1",
- "byteorder",
- "bytesize",
- "calamine",
- "chardetng",
- "chrono",
- "chrono-humanize",
- "chrono-tz",
- "crossterm",
- "csv",
- "data-encoding",
- "devicons",
- "digest 0.11.3",
- "dirs 7.0.0",
- "dns-lookup",
- "encoding_rs",
- "fancy-regex",
- "fff-search",
- "filesize",
- "filetime",
- "fluent",
- "getrandom 0.4.2",
- "http",
- "human-date-parser",
- "indexmap 2.14.1",
- "indicatif",
- "indoc",
- "itertools 0.15.0",
- "jiff",
- "kdl 6.7.1",
- "log",
- "lscolors",
- "md-5 0.11.0",
- "mime",
- "mime_guess",
- "mockito",
- "mq-markdown",
- "multipart-rs",
- "native-tls",
- "ndarray",
- "nix 0.31.3",
- "notify-debouncer-full",
- "nu-ansi-term",
- "nu-cmd-base",
- "nu-cmd-lang",
- "nu-color-config",
- "nu-config",
- "nu-engine",
- "nu-experimental",
- "nu-glob",
- "nu-heavy-utils",
- "nu-json",
- "nu-parser",
- "nu-path",
- "nu-pretty-hex",
- "nu-protocol",
- "nu-system",
- "nu-table",
- "nu-term-grid",
- "nu-test-support",
- "nu-utils",
- "nucleo-matcher",
- "num-format",
- "num-traits",
- "nuon",
- "oem_cp",
- "open",
- "os_pipe",
- "parse_datetime",
- "pathdiff",
- "percent-encoding",
- "pretty_assertions",
- "print-positions",
- "pure-rust-locales",
- "quick-xml 0.42.0",
- "rand 0.10.2",
- "rand_chacha 0.10.0",
- "rayon",
- "reedline",
- "rmp",
- "roxmltree",
- "rstest",
- "rstest_reuse",
- "rusqlite",
- "rustls",
- "rustls-native-certs",
- "scopeguard",
- "semver",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "sha2 0.11.0",
- "strum",
- "sysinfo",
- "tabled",
- "tempfile",
- "toml",
- "toml_edit",
- "trash",
- "typetag",
- "umask",
- "unicode-segmentation",
- "unicode-width 0.2.2",
- "ureq",
- "url",
- "uu_cp",
- "uu_mkdir",
- "uu_mktemp",
- "uu_mv",
- "uu_touch",
- "uu_uname",
- "uu_whoami",
- "uucore",
- "uuid",
- "v_htmlescape",
- "wax",
- "web-time",
- "webpki-roots",
- "which 8.0.6",
- "win_uds",
- "windows 0.62.2",
- "winreg",
-]
-
-[[package]]
-name = "nu-config"
-version = "0.117.0"
-dependencies = [
- "derive_more 2.1.1",
- "derive_setters",
- "dirs 7.0.0",
- "nu-path",
- "nu-test-support",
- "tempfile",
- "thiserror 2.0.20",
- "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "nu-dap"
-version = "0.117.0"
-dependencies = [
- "chrono",
- "derive_more 2.1.1",
- "libc",
- "miette 7.6.0",
- "nu-cmd-lang",
- "nu-command",
- "nu-engine",
- "nu-parser",
- "nu-path",
- "nu-protocol",
- "nu-test-support",
- "nu-utils",
- "parking_lot",
- "pretty_assertions",
- "rstest",
- "serde",
- "serde_json",
- "typetag",
- "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "nu-derive-value"
-version = "0.117.0"
-dependencies = [
- "heck",
- "proc-macro-error3",
- "proc-macro2",
- "quote",
- "syn 3.0.4",
-]
-
-[[package]]
-name = "nu-engine"
-version = "0.117.0"
-dependencies = [
- "fancy-regex",
- "log",
- "nu-experimental",
- "nu-glob",
- "nu-path",
- "nu-protocol",
- "nu-test-support",
- "nu-utils",
- "rstest",
-]
-
-[[package]]
-name = "nu-experimental"
-version = "0.117.0"
-dependencies = [
- "itertools 0.15.0",
- "thiserror 2.0.20",
-]
-
-[[package]]
-name = "nu-explore"
-version = "0.117.0"
-dependencies = [
- "ansi-str",
- "anyhow",
- "crossterm",
- "edtui",
- "fancy-regex",
- "log",
- "lscolors",
- "nu-ansi-term",
- "nu-color-config",
- "nu-config",
- "nu-engine",
- "nu-json",
- "nu-parser",
- "nu-path",
- "nu-pretty-hex",
- "nu-protocol",
- "nu-table",
- "nu-utils",
- "ratatui",
- "serde_json",
- "strip-ansi-escapes",
- "tui-tree-widget",
- "unicode-segmentation",
- "unicode-width 0.2.2",
-]
-
-[[package]]
-name = "nu-glob"
-version = "0.117.0"
-dependencies = [
- "anyhow",
- "doc-comment",
- "log",
- "nu-experimental",
- "rayon",
-]
-
-[[package]]
-name = "nu-heavy-utils"
-version = "0.117.0"
-dependencies = [
- "base64 0.23.1",
- "better_default",
- "chrono",
- "derive_setters",
- "indoc",
- "miette 7.6.0",
- "nu-protocol",
- "nu-test-support",
- "nu-utils",
- "pastey",
- "regex",
- "rstest",
- "scopeguard",
- "serde",
- "serde-saphyr",
- "strum",
-]
-
-[[package]]
-name = "nu-json"
-version = "0.117.0"
-dependencies = [
- "fancy-regex",
- "linked-hash-map",
- "nu-path",
- "nu-protocol",
- "nu-test-support",
- "nu-utils",
- "num-traits",
- "pretty_assertions",
- "rstest",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "nu-lsp"
-version = "0.117.0"
-dependencies = [
- "assert-json-diff",
- "crossbeam-channel",
- "fancy-regex",
- "lsp-server",
- "lsp-textdocument",
- "lsp-types",
- "memchr",
- "miette 7.6.0",
- "nu-cli",
- "nu-cmd-lang",
- "nu-command",
- "nu-engine",
- "nu-experimental",
- "nu-glob",
- "nu-parser",
- "nu-protocol",
- "nu-std",
- "nu-test-support",
- "nu-utils",
- "nucleo-matcher",
- "rstest",
- "serde",
- "serde_json",
- "url",
-]
-
-[[package]]
-name = "nu-mcp"
-version = "0.117.0"
-dependencies = [
- "bytes",
- "chrono",
- "futures",
- "hyper-util",
- "indoc",
- "miette 7.6.0",
- "nix 0.31.3",
- "nu-cmd-lang",
- "nu-engine",
- "nu-json",
- "nu-parser",
- "nu-protocol",
- "nuon",
- "rmcp",
- "schemars",
- "serde",
- "serde_json",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "nu-parser"
-version = "0.117.0"
-dependencies = [
- "chrono",
- "itertools 0.15.0",
- "log",
- "memchr",
- "nu-engine",
- "nu-experimental",
- "nu-path",
- "nu-plugin-engine",
- "nu-protocol",
- "nu-utils",
- "rstest",
- "rustc-hash",
- "semver",
- "serde_json",
-]
-
-[[package]]
-name = "nu-path"
-version = "0.117.0"
-dependencies = [
- "dirs 7.0.0",
- "omnipath",
- "pwd",
- "ref-cast",
-]
-
-[[package]]
-name = "nu-plugin"
-version = "0.117.0"
-dependencies = [
- "log",
- "nix 0.31.3",
- "nu-engine",
- "nu-plugin-core",
- "nu-plugin-protocol",
- "nu-protocol",
- "nu-utils",
- "serde",
- "thiserror 2.0.20",
- "typetag",
-]
-
-[[package]]
-name = "nu-plugin-core"
-version = "0.117.0"
-dependencies = [
- "interprocess",
- "log",
- "nu-plugin-protocol",
- "nu-protocol",
- "nu-utils",
- "rmp-serde",
- "serde",
- "serde_json",
- "windows 0.62.2",
-]
-
-[[package]]
-name = "nu-plugin-engine"
-version = "0.117.0"
-dependencies = [
- "log",
- "nu-engine",
- "nu-plugin-core",
- "nu-plugin-protocol",
- "nu-protocol",
- "nu-system",
- "nu-utils",
- "serde",
- "typetag",
- "windows 0.62.2",
-]
-
-[[package]]
-name = "nu-plugin-protocol"
-version = "0.117.0"
-dependencies = [
- "nu-protocol",
- "nu-utils",
- "rmp-serde",
- "semver",
- "serde",
- "typetag",
-]
-
-[[package]]
-name = "nu-plugin-test-support"
-version = "0.117.0"
-dependencies = [
- "nu-ansi-term",
- "nu-cmd-lang",
- "nu-engine",
- "nu-parser",
- "nu-plugin",
- "nu-plugin-core",
- "nu-plugin-engine",
- "nu-plugin-protocol",
- "nu-protocol",
- "serde",
- "similar 3.2.0",
- "typetag",
-]
-
-[[package]]
-name = "nu-pretty-hex"
-version = "0.117.0"
-dependencies = [
- "heapless",
- "nu-ansi-term",
- "rand 0.10.2",
-]
-
-[[package]]
-name = "nu-protocol"
-version = "0.117.0"
-dependencies = [
- "brotli 9.1.1",
- "bstr",
- "bytes",
- "chrono",
- "chrono-humanize",
- "derive_more 2.1.1",
- "dirs 7.0.0",
- "dirs-sys 0.5.0",
- "fancy-regex",
- "heck",
- "humantime",
- "indexmap 2.14.1",
- "indoc",
- "itertools 0.15.0",
- "log",
- "lru 0.19.0",
- "memchr",
- "miette 7.6.0",
- "nix 0.31.3",
- "nu-config",
- "nu-derive-value",
- "nu-experimental",
- "nu-glob",
- "nu-path",
- "nu-system",
- "nu-test-support",
- "nu-utils",
- "num-format",
- "os_pipe",
- "pretty_assertions",
- "rmp-serde",
- "rstest",
- "rustc-hash",
- "semver",
- "serde",
- "serde_json",
- "strum",
- "strum_macros",
- "tempfile",
- "thiserror 2.0.20",
- "typetag",
- "web-time",
- "windows 0.62.2",
- "windows-sys 0.61.2",
- "winnow 1.0.4",
-]
-
-[[package]]
-name = "nu-std"
-version = "0.117.0"
-dependencies = [
- "log",
- "miette 7.6.0",
- "nu-engine",
- "nu-parser",
- "nu-protocol",
-]
-
-[[package]]
-name = "nu-system"
-version = "0.117.0"
-dependencies = [
- "itertools 0.15.0",
- "libc",
- "libproc",
- "log",
- "mach2",
- "nix 0.31.3",
- "ntapi",
- "nu-utils",
- "procfs",
- "sysinfo",
- "uucore",
- "web-time",
- "windows 0.62.2",
-]
-
-[[package]]
-name = "nu-table"
-version = "0.117.0"
-dependencies = [
- "fancy-regex",
- "nu-ansi-term",
- "nu-color-config",
- "nu-engine",
- "nu-protocol",
- "nu-utils",
- "tabled",
-]
-
-[[package]]
-name = "nu-term-grid"
-version = "0.117.0"
-dependencies = [
- "nu-utils",
- "unicode-width 0.2.2",
-]
-
-[[package]]
-name = "nu-test-support"
-version = "0.117.0"
-dependencies = [
- "bytes",
- "derive_more 2.1.1",
- "gatekeeper",
- "indoc",
- "itertools 0.15.0",
- "kitest",
- "lexopt",
- "linkme",
- "miette 7.6.0",
- "nu-ansi-term",
- "nu-cli",
- "nu-cmd-base",
- "nu-cmd-extra",
- "nu-cmd-lang",
- "nu-cmd-plugin",
- "nu-command",
- "nu-engine",
- "nu-experimental",
- "nu-glob",
- "nu-parser",
- "nu-path",
- "nu-plugin-core",
- "nu-plugin-engine",
- "nu-protocol",
- "nu-std",
- "nu-test-support-macros",
- "nu-tui",
- "nu-utils",
- "num-format",
- "parking_lot",
- "pastey",
- "rstest",
- "serde_json",
- "tempfile",
- "thiserror 2.0.20",
- "which 8.0.6",
-]
-
-[[package]]
-name = "nu-test-support-macros"
-version = "0.117.0"
-dependencies = [
- "heck",
- "nu-experimental",
- "proc-macro-error3",
- "proc-macro2",
- "quote",
- "syn 3.0.4",
-]
-
-[[package]]
-name = "nu-tui"
-version = "0.117.0"
-dependencies = [
- "ansi-str",
- "crossterm",
- "lscolors",
- "mime_guess",
- "nu-ansi-term",
- "nu-cmd-lang",
- "nu-color-config",
- "nu-command",
- "nu-engine",
- "nu-explore",
- "nu-protocol",
- "nu-system",
- "nu-test-support",
- "nu-utils",
- "nucleo-matcher",
- "ratatui",
- "serde",
- "typetag",
- "unicode-width 0.2.2",
-]
-
-[[package]]
-name = "nu-utils"
-version = "0.117.0"
-dependencies = [
- "byteyarn",
- "crossterm",
- "crossterm_winapi",
- "derive_more 2.1.1",
- "fancy-regex",
- "lean_string",
- "log",
- "lscolors",
- "memchr",
- "nix 0.31.3",
- "num-format",
- "parking_lot",
- "serde",
- "serde_json",
- "strip-ansi-escapes",
- "sys-locale",
- "unicase",
- "web-time",
-]
-
-[[package]]
-name = "nu_plugin_custom_values"
-version = "0.117.0"
-dependencies = [
- "nu-plugin",
- "nu-plugin-test-support",
- "nu-protocol",
- "serde",
- "typetag",
-]
-
-[[package]]
-name = "nu_plugin_example"
-version = "0.117.0"
-dependencies = [
- "nu-cmd-lang",
- "nu-plugin",
- "nu-plugin-test-support",
- "nu-protocol",
-]
-
-[[package]]
-name = "nu_plugin_formats"
-version = "0.117.0"
-dependencies = [
- "chrono",
- "eml-parser",
- "ical",
- "indexmap 2.14.1",
- "nu-plugin",
- "nu-plugin-test-support",
- "nu-protocol",
- "plist",
- "rust-ini",
-]
-
-[[package]]
-name = "nu_plugin_gstat"
-version = "0.117.0"
-dependencies = [
- "git2",
- "nu-plugin",
- "nu-protocol",
- "tempfile",
-]
-
-[[package]]
-name = "nu_plugin_inc"
-version = "0.117.0"
-dependencies = [
- "nu-plugin",
- "nu-protocol",
- "semver",
-]
-
-[[package]]
-name = "nu_plugin_polars"
-version = "0.117.0"
-dependencies = [
- "aws-config",
- "aws-credential-types",
- "chrono",
- "chrono-tz",
- "env_logger",
- "fancy-regex",
- "hashbrown 0.17.1",
- "indexmap 2.14.1",
- "log",
- "nu-cmd-lang",
- "nu-command",
- "nu-engine",
- "nu-parser",
- "nu-path",
- "nu-plugin",
- "nu-plugin-test-support",
- "nu-protocol",
- "nu-utils",
- "num",
- "planus",
- "polars",
- "polars-arrow",
- "polars-compute",
- "polars-io",
- "polars-lazy",
- "polars-ops",
- "polars-plan",
- "polars-utils",
- "serde",
- "sqlparser 0.61.0",
- "tempfile",
- "tokio",
- "typetag",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "nu_plugin_query"
-version = "0.117.0"
-dependencies = [
- "gjson",
- "nu-plugin",
- "nu-protocol",
- "scraper",
- "serde",
- "serde_json",
- "sxd-document",
- "sxd-xpath",
- "webpage",
-]
-
-[[package]]
-name = "nu_plugin_stress_internals"
-version = "0.117.0"
-dependencies = [
- "interprocess",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -5754,13 +5754,13 @@ dependencies = [
 
 [[package]]
 name = "nuon"
-version = "0.117.0"
+version = "1.0.0"
 dependencies = [
+ "arbor-engine",
+ "arbor-parser",
+ "arbor-protocol",
+ "arbor-utils",
  "chrono",
- "nu-engine",
- "nu-parser",
- "nu-protocol",
- "nu-utils",
  "unicode-width 0.2.2",
 ]
 
@@ -9205,7 +9205,7 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 
 [[package]]
 name = "testbins"
-version = "0.117.0"
+version = "1.0.0"
 dependencies = [
  "indoc",
  "lexopt",

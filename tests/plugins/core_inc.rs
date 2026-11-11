@@ -1,10 +1,10 @@
-use nu_test_support::{fs::Stub::FileWithContent, prelude::*};
+use arbor_test_support::{fs::Stub::FileWithContent, prelude::*};
 use rstest::rstest;
 
 #[rstest]
 #[case::major_minor("--major --minor")]
 #[case::minor_major("--minor --major")] // regardless of order of arguments
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU_PLUGIN_INC)]
 fn chooses_highest_increment_if_given_more_than_one(#[case] args: &str) -> Result {
     let code = format! {"
@@ -61,7 +61,7 @@ fn by_one_with_no_field_passed() -> Result {
 #[case::major("major", "-M", "1.0.0")]
 #[case::minor("minor", "--minor", "0.2.0")]
 #[case::patch("patch", "--patch", "0.1.4")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU_PLUGIN_INC)]
 fn semantic_version_inc(#[case] topic: &str, #[case] args: &str, #[case] expected: &str) -> Result {
     Playground::setup(&format!("semantic_version_inc_{topic}"), |dirs, sandbox| {

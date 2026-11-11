@@ -4,8 +4,8 @@
 
 #[cfg(unix)]
 use nix::libc;
-use nu_test_support::{fs::Stub::FileWithContent, prelude::*};
-use nu_utils::time::Instant;
+use arbor_test_support::{fs::Stub::FileWithContent, prelude::*};
+use arbor_utils::time::Instant;
 use pretty_assertions::assert_eq;
 use rstest::rstest;
 #[cfg(unix)]
@@ -315,7 +315,7 @@ fn background_exit_does_not_warn() -> Result {
 /// even with `-i`, and even if they catch it.
 #[cfg(unix)]
 #[rstest]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU)]
 fn interrupt_outside_repl_kills_background_jobs(
     #[values(false, true)] script: bool,
@@ -350,7 +350,7 @@ fn interrupt_outside_repl_kills_background_jobs(
 #[case::exit("exit 42; error make {msg: continued}", 42)]
 #[case::error("error make {msg: boom}", 1)]
 #[cfg_attr(unix, case::interrupt("kill --signal 2 $nu.pid; sleep 1min", 1))]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU)]
 fn background_processes_end_with_commands_and_scripts(
     #[case] ending: &str,
@@ -396,7 +396,7 @@ fn chained_background_processes_end_with_nu() -> Result {
 #[case::config_error(&["--env-config", "spawn.nu", "--config", "error.nu", "-c", "print ok"])]
 #[case::missing_config(&["--env-config", "spawn.nu", "--config", "missing.nu", "-c", "print ok"])]
 #[case::repl_without_terminal(&["-n", "--no-history", "-e", SPAWN_BACKGROUND_PROCESS])]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU)]
 fn background_processes_end_with_failed_startup(#[case] args: &[&str]) -> Result {
     Playground::setup(

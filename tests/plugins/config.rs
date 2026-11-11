@@ -1,5 +1,5 @@
-use nu_protocol::test_record;
-use nu_test_support::prelude::*;
+use arbor_protocol::test_record;
+use arbor_test_support::prelude::*;
 
 #[test]
 #[deps(NU_PLUGIN_EXAMPLE)]

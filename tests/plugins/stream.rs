@@ -1,4 +1,4 @@
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 
 #[test]
@@ -27,7 +27,7 @@ fn seq_describe_no_collect_succeeds_without_error() -> Result {
 #[rstest]
 #[case("example seq 1 5 | to json --raw", "[1,2,3,4,5]")]
 #[case("example seq 1 0 | to json --raw", "[]")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU_PLUGIN_EXAMPLE)]
 fn seq_stream_collects_to_correct_list(#[case] code: &str, #[case] expected: &str) -> Result {
     test().run(code).expect_value_eq(expected)
@@ -47,7 +47,7 @@ fn seq_big_stream() -> Result {
 #[case::stream_of_ints("seq 1 5", 15)]
 #[case::stream_of_floats("seq 1 5 | into float", 15.0)]
 #[case::big_stream("seq 1 100_000", 5_000_050_000i64)]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU_PLUGIN_EXAMPLE)]
 fn sum_accepts(#[case] input: &str, #[case] expected: impl IntoValue) -> Result {
     test()
@@ -58,7 +58,7 @@ fn sum_accepts(#[case] input: &str, #[case] expected: impl IntoValue) -> Result 
 #[rstest]
 #[case::list_of_strings("[a b]", "ab")]
 #[case::list_of_binary("[0x[41] 0x[42]]", "AB")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU_PLUGIN_EXAMPLE)]
 fn collect_bytes(#[case] input: &str, #[case] expected: impl IntoValue) -> Result {
     test()
@@ -113,7 +113,7 @@ fn generate_sequence() -> Result {
 
 #[rstest]
 #[timeout(std::time::Duration::from_secs(6))]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[serial]
 #[deps(NU_PLUGIN_EXAMPLE)]
 fn echo_interactivity_on_slow_pipelines() -> Result {

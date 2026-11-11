@@ -1,4 +1,4 @@
-use nu_test_support::{
+use arbor_test_support::{
     fs::Stub::{FileWithContent, FileWithContentToBeTrimmed},
     prelude::*,
 };
@@ -73,7 +73,7 @@ fn module_private_import_decl_not_public() -> Result {
             test()
                 .cwd(dirs.test())
                 .run("use main.nu foo")
-                .expect_error_code_eq("nu::parser::export_not_found")
+                .expect_error_code_eq("arbor::parser::export_not_found")
         },
     )
 }
@@ -320,7 +320,7 @@ fn module_cyclical_imports_0() -> Result {
         test()
             .cwd(dirs.test())
             .run("module eggs { use spam.nu }")
-            .expect_error_code_eq("nu::parser::module_not_found")
+            .expect_error_code_eq("arbor::parser::module_not_found")
     })
 }
 
@@ -332,7 +332,7 @@ fn module_cyclical_imports_1() -> Result {
         test()
             .cwd(dirs.test())
             .run("use spam.nu")
-            .expect_error_code_eq("nu::parser::circular_import")
+            .expect_error_code_eq("arbor::parser::circular_import")
     })
 }
 
@@ -346,7 +346,7 @@ fn module_cyclical_imports_2() -> Result {
         test()
             .cwd(dirs.test())
             .run("use spam.nu")
-            .expect_error_code_eq("nu::parser::circular_import")
+            .expect_error_code_eq("arbor::parser::circular_import")
     })
 }
 
@@ -361,7 +361,7 @@ fn module_cyclical_imports_3() -> Result {
         test()
             .cwd(dirs.test())
             .run("use spam.nu")
-            .expect_error_code_eq("nu::parser::circular_import")
+            .expect_error_code_eq("arbor::parser::circular_import")
     })
 }
 
@@ -401,7 +401,7 @@ fn module_valid_def_name() -> Result {
 fn module_invalid_def_name() -> Result {
     test()
         .run(r#"module spam { export def spam [] { "spam" } }"#)
-        .expect_error_code_eq("nu::parser::named_as_module")
+        .expect_error_code_eq("arbor::parser::named_as_module")
 }
 
 #[test]
@@ -422,14 +422,14 @@ fn module_valid_alias_name_2() -> Result {
 fn module_invalid_alias_name() -> Result {
     test()
         .run(r#"module spam { export alias spam = echo "spam" }"#)
-        .expect_error_code_eq("nu::parser::named_as_module")
+        .expect_error_code_eq("arbor::parser::named_as_module")
 }
 
 #[test]
 fn module_main_alias_not_allowed() -> Result {
     test()
         .run("module spam { export alias main = echo 'spam' }")
-        .expect_error_code_eq("nu::parser::export_main_alias_not_allowed")
+        .expect_error_code_eq("arbor::parser::export_main_alias_not_allowed")
 }
 
 #[test]
@@ -443,7 +443,7 @@ fn module_valid_known_external_name() -> Result {
 fn module_invalid_known_external_name() -> Result {
     test()
         .run("module spam { export extern spam [] }")
-        .expect_error_code_eq("nu::parser::named_as_module")
+        .expect_error_code_eq("arbor::parser::named_as_module")
 }
 
 #[test]
@@ -566,7 +566,7 @@ fn module_dir_missing_mod_nu() -> Result {
     test()
         .cwd("tests/modules")
         .run("use samples/missing_mod_nu")
-        .expect_error_code_eq("nu::parser::module_missing_mod_nu_file")
+        .expect_error_code_eq("arbor::parser::module_missing_mod_nu_file")
 }
 
 #[test]
@@ -597,7 +597,7 @@ fn allowed_local_module() -> Result {
 fn not_allowed_submodule() -> Result {
     test()
         .run("module spam { export module spam {} }")
-        .expect_error_code_eq("nu::parser::named_as_module")
+        .expect_error_code_eq("arbor::parser::named_as_module")
 }
 
 #[test]
@@ -622,7 +622,7 @@ fn module_self_name_main_not_allowed() -> Result {
             }
             ",
         )
-        .expect_error_code_eq("nu::parser::module_double_main")?;
+        .expect_error_code_eq("arbor::parser::module_double_main")?;
 
     test()
         .run(
@@ -636,7 +636,7 @@ fn module_self_name_main_not_allowed() -> Result {
             }
             ",
         )
-        .expect_error_code_eq("nu::parser::module_double_main")
+        .expect_error_code_eq("arbor::parser::module_double_main")
 }
 
 #[test]
@@ -645,13 +645,13 @@ fn module_main_not_found() -> Result {
     let () = tester.run("module spam {}")?;
     tester
         .run("use spam main")
-        .expect_error_code_eq("nu::parser::export_not_found")?;
+        .expect_error_code_eq("arbor::parser::export_not_found")?;
 
     let mut tester = test();
     let () = tester.run("module spam {}")?;
     tester
         .run("use spam [ main ]")
-        .expect_error_code_eq("nu::parser::export_not_found")
+        .expect_error_code_eq("arbor::parser::export_not_found")
 }
 
 #[test]

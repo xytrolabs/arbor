@@ -1,8 +1,8 @@
 //! A `def` body is compiled to IR once, by `parse_def` after the body's scope is closed.
 
-use nu_parser::parse;
-use nu_protocol::{CompileError, engine::StateWorkingSet};
-use nu_test_support::prelude::*;
+use arbor_parser::parse;
+use arbor_protocol::{CompileError, engine::StateWorkingSet};
+use arbor_test_support::prelude::*;
 
 #[test]
 fn def_body_gets_ir() -> Result {

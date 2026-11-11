@@ -9,11 +9,11 @@ def keep-plugin-executables [] {
 
 # Add all installed plugins.
 @category "toolkit"
-@search-terms plugin add plugins nu_plugin register
+@search-terms plugin add plugins arbor_plugin register
 @example "Register all available plugins" { toolkit add plugins }
 export def "add plugins" [] {
     let plugin_path = (which nu | get path.0 | path dirname)
-    let plugins = (ls $plugin_path | where name =~ nu_plugin | keep-plugin-executables | get name)
+    let plugins = (ls $plugin_path | where name =~ arbor_plugin | keep-plugin-executables | get name)
 
     if ($plugins | is-empty) {
         print $"no plugins found in ($plugin_path)..."

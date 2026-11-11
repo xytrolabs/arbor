@@ -20,7 +20,7 @@ REPO_ROOT=$(dirname $DIR)
 export NUSHELL_CARGO_PROFILE=ci
 
 # Manual gathering of coverage to catch invocation of the `nu` binary.
-# This is relevant for tests using the `nu!` macro from `nu-test-support`
+# This is relevant for tests using the `nu!` macro from `arbor-test-support`
 # see: https://github.com/taiki-e/cargo-llvm-cov#get-coverage-of-external-tests
 
 (

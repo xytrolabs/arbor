@@ -1,4 +1,4 @@
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 use pretty_assertions::assert_matches;
 
 #[test]
@@ -58,7 +58,7 @@ fn can_get_plugin_custom_value_int_cell_path() -> Result {
 
     test()
         .run("(custom-value generate).1")
-        .expect_error_code_eq("nu::shell::access_beyond_end")?;
+        .expect_error_code_eq("arbor::shell::access_beyond_end")?;
 
     test()
         .run("(custom-value generate).1?")
@@ -76,7 +76,7 @@ fn can_get_plugin_custom_value_string_cell_path() -> Result {
 
     test()
         .run("(custom-value generate).meh")
-        .expect_error_code_eq("nu::shell::column_not_found")?;
+        .expect_error_code_eq("arbor::shell::column_not_found")?;
 
     test()
         .run("(custom-value generate).meh?")
@@ -84,7 +84,7 @@ fn can_get_plugin_custom_value_string_cell_path() -> Result {
 
     test()
         .run("(custom-value generate).COOL")
-        .expect_error_code_eq("nu::shell::column_not_found")?;
+        .expect_error_code_eq("arbor::shell::column_not_found")?;
 
     test()
         .run("(custom-value generate).COOL!")
@@ -259,11 +259,11 @@ fn plugin_custom_type_usable_in_let_annotation() -> Result {
     // Rejected while parsing when the value's type is known, and at runtime otherwise
     test()
         .run("let h: HandleCustomValue = 42")
-        .expect_error_code_eq("nu::parser::type_mismatch")?;
+        .expect_error_code_eq("arbor::parser::type_mismatch")?;
 
     test()
         .run("let h: HandleCustomValue = (custom-value generate)")
-        .expect_error_code_eq("nu::shell::type_mismatch")
+        .expect_error_code_eq("arbor::shell::type_mismatch")
 }
 
 #[test]
@@ -278,7 +278,7 @@ fn plugin_custom_type_usable_in_list_type() -> Result {
 
     test()
         .run("def f [hs: list<HandleCustomValue>] { }; f [1 2]")
-        .expect_error_code_eq("nu::parser::parse_mismatch_with_full_string_msg")
+        .expect_error_code_eq("arbor::parser::parse_mismatch_with_full_string_msg")
 }
 
 #[test]

@@ -1,10 +1,10 @@
-use nu_protocol::test_value;
-use nu_test_support::fs::Stub::FileWithContent;
-use nu_test_support::playground::Playground;
-use nu_test_support::prelude::*;
+use arbor_protocol::test_value;
+use arbor_test_support::fs::Stub::FileWithContent;
+use arbor_test_support::playground::Playground;
+use arbor_test_support::prelude::*;
 use pretty_assertions::assert_eq;
 
-// Note: These tests might slightly overlap with crates/nu-command/tests/commands/help.rs
+// Note: These tests might slightly overlap with crates/arbor-command/tests/commands/help.rs
 
 #[test]
 fn scope_shows_alias() -> Result {

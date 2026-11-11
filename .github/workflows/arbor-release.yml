@@ -122,9 +122,9 @@ jobs:
           esac
 
       # --- Build -----------------------------------------------------------
-      # nu-test-support is a workspace dev crate; excluding it trims the build.
+      # arbor-test-support is a workspace dev crate; excluding it trims the build.
       - name: Build
-        run: cargo build --release --locked --workspace --exclude nu-test-support --target ${{ matrix.target }}
+        run: cargo build --release --locked --workspace --exclude arbor-test-support --target ${{ matrix.target }}
 
       # --- Package ---------------------------------------------------------
       - name: Package (unix)

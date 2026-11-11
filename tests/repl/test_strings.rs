@@ -1,5 +1,5 @@
 use crate::repl::tests::{TestResult, fail_test, run_test};
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 use pretty_assertions::assert_matches;
 use rstest::rstest;
 
@@ -23,7 +23,7 @@ fn string_in_string() -> TestResult {
 
 #[test]
 fn non_string_in_string() -> TestResult {
-    fail_test("42 in 'abc'", "nu::parser::operator_incompatible_types")
+    fail_test("42 in 'abc'", "arbor::parser::operator_incompatible_types")
 }
 
 #[test]
@@ -35,7 +35,7 @@ fn string_in_record() -> TestResult {
 fn non_string_in_record() -> TestResult {
     fail_test(
         r#"4 in ('{ "a": 13, "b": 14 }' | from json)"#,
-        "nu::shell::operator_incompatible_types",
+        "arbor::shell::operator_incompatible_types",
     )
 }
 
@@ -193,7 +193,7 @@ fn incomplete_string() -> TestResult {
 fn text_after_closing_quote(#[case] code: &str) -> Result {
     test()
         .run(code)
-        .expect_error_code_eq("nu::parser::extra_token_after_closing_delimiter")
+        .expect_error_code_eq("arbor::parser::extra_token_after_closing_delimiter")
 }
 
 /// A quoted word runs to its last quote of the same kind, and the quotes of that kind inside it

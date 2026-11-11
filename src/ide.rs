@@ -1,7 +1,7 @@
 use miette::IntoDiagnostic;
-use nu_cli::NuCompleter;
-use nu_parser::{FlatShape, flatten_block, parse};
-use nu_protocol::{
+use arbor_cli::NuCompleter;
+use arbor_parser::{FlatShape, flatten_block, parse};
+use arbor_protocol::{
     DeclId, ShellError, Span, Value, VarId,
     engine::{EngineState, Stack, StateWorkingSet},
     report_shell_error,

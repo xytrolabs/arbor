@@ -7,10 +7,10 @@ use std::time::Duration;
 use pretty_assertions::{assert_eq, assert_matches};
 use rstest::rstest;
 
-use nu_protocol::Type;
-use nu_test_support::fs::Stub;
-use nu_test_support::playground::Playground;
-use nu_test_support::prelude::*;
+use arbor_protocol::Type;
+use arbor_test_support::fs::Stub;
+use arbor_test_support::playground::Playground;
+use arbor_test_support::prelude::*;
 
 #[test]
 #[deps(NU)]
@@ -286,7 +286,7 @@ fn source_circular() -> Result {
     test()
         .cwd("tests/parsing/samples")
         .run("source source_circular_1.nu")
-        .expect_error_code_eq("nu::parser::circular_import")
+        .expect_error_code_eq("arbor::parser::circular_import")
 }
 
 /// A UTF-8 byte-order mark at the start of a file, as Windows editors can write, is skipped by
@@ -536,7 +536,7 @@ fn parse_file_relative_to_parsed_file_dont_use_cwd_2() -> Result {
         test()
             .cwd(dirs.test())
             .run("source-env lol/lol.nu")
-            .expect_error_code_eq("nu::parser::sourced_file_not_found")
+            .expect_error_code_eq("arbor::parser::sourced_file_not_found")
     })
 }
 
@@ -549,7 +549,7 @@ fn parse_export_env_in_module() -> Result {
 fn parse_export_env_missing_block() -> Result {
     test()
         .run("module spam { export-env }")
-        .expect_error_code_eq("nu::parser::missing_positional")
+        .expect_error_code_eq("arbor::parser::missing_positional")
 }
 
 #[test]
@@ -604,7 +604,7 @@ fn parse_function_signature_switch_is_bool() -> Result {
 fn parse_function_signature_name_is_builtin_var(#[case] phrase: &str) -> Result {
     test()
         .run(phrase)
-        .expect_error_code_eq("nu::parser::name_is_builtin_var")
+        .expect_error_code_eq("arbor::parser::name_is_builtin_var")
 }
 
 #[rstest]
@@ -623,21 +623,21 @@ fn parse_let_signature(#[case] phrase: &str) -> Result {
 fn parse_let_signature_missing_colon() -> Result {
     test()
         .run("let a int = 1")
-        .expect_error_code_eq("nu::parser::extra_tokens")
+        .expect_error_code_eq("arbor::parser::extra_tokens")
 }
 
 #[test]
 fn parse_mut_signature_missing_colon() -> Result {
     test()
         .run("mut a record<a: int b: int> = {a: 1 b: 1}")
-        .expect_error_code_eq("nu::parser::extra_tokens")
+        .expect_error_code_eq("arbor::parser::extra_tokens")
 }
 
 #[test]
 fn parse_const_signature_missing_colon() -> Result {
     test()
         .run("const a string = 'Hello World\n'")
-        .expect_error_code_eq("nu::parser::extra_tokens")
+        .expect_error_code_eq("arbor::parser::extra_tokens")
 }
 
 /// https://github.com/nushell/nushell/issues/16969
@@ -661,7 +661,7 @@ fn wacky_range_unmatched_paren() -> Result {
     // Unterminated quote is reported as unclosed delimiter (not unexpected EOF).
     test()
         .run("') ..")
-        .expect_error_code_eq("nu::parser::unclosed_delimiter")
+        .expect_error_code_eq("arbor::parser::unclosed_delimiter")
 }
 
 #[test]

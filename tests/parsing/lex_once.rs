@@ -4,14 +4,14 @@
 //! Every `.nu` file of the standard library, the default config files and the toolkit is parsed
 //! twice in the shell's engine, with [`StateWorkingSet::lex_once`] off and on, and everything
 //! the parse produced is compared. The lexer itself is compared on hand-written inputs and
-//! variants of them by the tests in `crates/nu-parser/src/lex_once.rs`.
+//! variants of them by the tests in `crates/arbor-parser/src/lex_once.rs`.
 
-use nu_parser::{FlatShape, flatten_block};
-use nu_protocol::{DeclId, Span, VarId, ast::Block, engine::StateWorkingSet};
-use nu_test_support::{fs::nu_files, prelude::*, tester::parse_file};
+use arbor_parser::{FlatShape, flatten_block};
+use arbor_protocol::{DeclId, Span, VarId, ast::Block, engine::StateWorkingSet};
+use arbor_test_support::{fs::nu_files, prelude::*, tester::parse_file};
 
 /// The smallest file that gets a bracket table (`BRACKET_TABLE_LEN` in
-/// `crates/nu-parser/src/lex_once.rs`). Smaller inputs are padded to it with trailing spaces,
+/// `crates/arbor-parser/src/lex_once.rs`). Smaller inputs are padded to it with trailing spaces,
 /// which lex the same with and without tables.
 const MIN_TABLE_LEN: usize = 1024;
 
@@ -97,8 +97,8 @@ fn lex_once_parses_like_scanning() -> Result {
     let engine_state = test().engine_state;
     let mut files = vec![];
     for dir in [
-        "crates/nu-std/std",
-        "crates/nu-config/default_files",
+        "crates/arbor-std/std",
+        "crates/arbor-config/default_files",
         "toolkit",
     ] {
         let found = nu_files(WORKSPACE_ROOT.join(dir));
@@ -108,7 +108,7 @@ fn lex_once_parses_like_scanning() -> Result {
 
     for path in files {
         // Every input is at least as large as the smallest file that gets a bracket table, so the
-        // parse with `lex_once` on records and uses one (a unit test of `lex_file` in nu-parser
+        // parse with `lex_once` on records and uses one (a unit test of `lex_file` in arbor-parser
         // checks that it does).
         let mut source = std::fs::read(&path).expect("file is readable");
         if source.len() < MIN_TABLE_LEN {

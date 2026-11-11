@@ -4,24 +4,24 @@ use crate::{
 };
 use log::trace;
 #[cfg(feature = "plugin")]
-use nu_cli::read_plugin_file;
-use nu_cli::{EvaluateCommandsOpts, evaluate_commands, evaluate_file, evaluate_repl};
-use nu_config::ConfigFileKind;
-use nu_engine::exit::kill_jobs_and_exit;
-use nu_protocol::{
+use arbor_cli::read_plugin_file;
+use arbor_cli::{EvaluateCommandsOpts, evaluate_commands, evaluate_file, evaluate_repl};
+use arbor_config::ConfigFileKind;
+use arbor_engine::exit::kill_jobs_and_exit;
+use arbor_protocol::{
     PipelineData, ShellError,
     engine::{EngineState, Stack},
     report_shell_error,
 };
-use nu_utils::perf;
-use nu_utils::time::Instant;
+use arbor_utils::perf;
+use arbor_utils::time::Instant;
 
 pub(crate) fn run_commands(
     engine_state: &mut EngineState,
     mut stack: Stack,
     parsed_cli: command::ParsedCli,
     use_color: bool,
-    commands: &nu_protocol::Spanned<String>,
+    commands: &arbor_protocol::Spanned<String>,
     input: PipelineData,
 ) {
     trace!("run_commands");
@@ -32,7 +32,7 @@ pub(crate) fn run_commands(
         ..
     } = parsed_cli;
 
-    let start_time = nu_utils::time::Instant::now();
+    let start_time = arbor_utils::time::Instant::now();
     let create_scaffold = !engine_state.config_dirs.config_home.exists();
 
     // if the --no-config-file(-n) option is NOT passed, load the plugin file,
@@ -202,8 +202,8 @@ pub(crate) fn run_file(
     // parser. Config has already been loaded above, so `$env.config.arbor`
     // is honoured.
     if !script_name.is_empty()
-        && nu_cli::indent::script_kind(std::path::Path::new(&script_name))
-            == nu_cli::indent::ScriptKind::Indent
+        && arbor_cli::indent::script_kind(std::path::Path::new(&script_name))
+            == arbor_cli::indent::ScriptKind::Indent
         && engine_state.get_config().arbor.indent_scripts
     {
         let path = script_name.clone();
@@ -211,7 +211,7 @@ pub(crate) fn run_file(
 
         // Explicit config path wins, then PATH / known locations.
         let indent_bin = if arbor_config.indent_binary.is_empty() {
-            nu_cli::indent::find_indent_binary()
+            arbor_cli::indent::find_indent_binary()
         } else {
             Some(std::path::PathBuf::from(&arbor_config.indent_binary))
         };
@@ -224,8 +224,8 @@ pub(crate) fn run_file(
             kill_jobs_and_exit(engine_state, 127);
         };
 
-        let lib_dir = nu_cli::indent::find_helper_lib();
-        let exit_code = match nu_cli::indent::run_indent_file(
+        let lib_dir = arbor_cli::indent::find_helper_lib();
+        let exit_code = match arbor_cli::indent::run_indent_file(
             &indent_bin,
             std::path::Path::new(&path),
             lib_dir.as_deref(),
@@ -263,7 +263,7 @@ pub(crate) fn run_repl(
     parsed_nu_cli_args: command::NushellCliArgs,
 ) -> Result<(), miette::ErrReport> {
     trace!("run_repl");
-    let start_time = nu_utils::time::Instant::now();
+    let start_time = arbor_utils::time::Instant::now();
 
     if parsed_nu_cli_args.no_config_file.is_none() {
         setup_config(
@@ -307,14 +307,14 @@ pub(crate) fn run_lsp(
     mut engine_state: EngineState,
     parsed_nu_cli_args: command::NushellCliArgs,
     use_color: bool,
-    start_time: nu_utils::time::Instant,
+    start_time: arbor_utils::time::Instant,
 ) -> Result<(), miette::ErrReport> {
     if parsed_nu_cli_args.no_config_file.is_none() {
-        let mut stack = nu_protocol::engine::Stack::new();
+        let mut stack = arbor_protocol::engine::Stack::new();
         config_files::setup_config(&mut engine_state, &mut stack, false);
     }
 
     engine_state.finish_startup();
     perf!("lsp starting", start_time, use_color);
-    nu_lsp::LanguageServer::initialize_stdio_connection(engine_state)?.serve_requests()
+    arbor_lsp::LanguageServer::initialize_stdio_connection(engine_state)?.serve_requests()
 }

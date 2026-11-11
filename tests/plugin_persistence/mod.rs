@@ -6,7 +6,7 @@
 // tests that assert stopping and starting or verify PIDs should run in serial to not clash with
 // other test threads
 
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 
 #[test]
@@ -112,7 +112,7 @@ fn plugin_process_exits_when_nushell_exits() -> Result {
 #[case::example("example seq 1 10 | ignore")]
 #[deps(NU_PLUGIN_CUSTOM_VALUES)]
 #[case::custom_values("custom-value generate | ignore")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 fn plugin_commands_run_without_error(#[case] commands: &str) -> Result {
     test().run(commands).expect_value_eq(())
 }
@@ -124,7 +124,7 @@ fn plugin_commands_run_without_error(#[case] commands: &str) -> Result {
 #[case::example_multiple_times(["example seq 1 10", "example seq 1 20"])]
 #[deps(NU_PLUGIN_CUSTOM_VALUES)]
 #[case::custom_values_multiple_times(["custom-value generate", "custom-value generate2"])]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 fn plugin_commands_run_multiple_times_without_error(
     #[case] commands: impl IntoIterator<IntoIter = impl Iterator<Item = &'static str>>,
 ) -> Result {

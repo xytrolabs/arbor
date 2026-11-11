@@ -743,7 +743,7 @@ fn plugins_requires_absolute_paths() -> TestResult {
                 "--no-config-file",
                 "--no-std-lib",
                 "--plugins",
-                "nu_plugin_gstat",
+                "arbor_plugin_gstat",
             ])
             .output()?;
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -1474,7 +1474,7 @@ fn command_reports_parse_errors() -> TestResult {
 
     assert!(!output.status.success());
     assert!(
-        stderr.contains("nu::parser::parse_mismatch"),
+        stderr.contains("arbor::parser::parse_mismatch"),
         "actual: {stderr:?}"
     );
     assert!(stderr.contains("expected int"), "actual: {stderr:?}");

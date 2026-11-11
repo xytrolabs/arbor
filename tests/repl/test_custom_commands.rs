@@ -1,5 +1,5 @@
-use nu_protocol::{ParseError, ShellError, Type};
-use nu_test_support::{prelude::*, tester::NuTester};
+use arbor_protocol::{ParseError, ShellError, Type};
+use arbor_test_support::{prelude::*, tester::NuTester};
 use pretty_assertions::assert_matches;
 use rstest::rstest;
 
@@ -97,7 +97,7 @@ fn custom_flag_with_type_checking(
 
     test()
         .run(code)
-        .expect_error_code_eq("nu::parser::type_mismatch")
+        .expect_error_code_eq("arbor::parser::type_mismatch")
 }
 
 /// `null` is intentionally allowed for optional named flags: it omits the flag

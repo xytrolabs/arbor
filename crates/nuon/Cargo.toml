@@ -11,10 +11,10 @@ version.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nu-parser.workspace = true
-nu-protocol.workspace = true
-nu-engine.workspace = true
-nu-utils.workspace = true
+arbor-parser.workspace = true
+arbor-protocol.workspace = true
+arbor-engine.workspace = true
+arbor-utils.workspace = true
 unicode-width = { workspace = true }
 
 [dev-dependencies]

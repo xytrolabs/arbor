@@ -1,7 +1,7 @@
-use nu_path::absolute_with;
-use nu_test_support::fs::Stub::EmptyFile;
-use nu_test_support::playground::Playground;
-use nu_test_support::prelude::*;
+use arbor_path::absolute_with;
+use arbor_test_support::fs::Stub::EmptyFile;
+use arbor_test_support::playground::Playground;
+use arbor_test_support::prelude::*;
 use pretty_assertions::assert_eq;
 use std::path::Path;
 

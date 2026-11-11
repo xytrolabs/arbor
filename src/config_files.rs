@@ -1,13 +1,13 @@
 use log::info;
 #[cfg(feature = "plugin")]
-use nu_cli::read_plugin_file;
-use nu_cli::{
+use arbor_cli::read_plugin_file;
+use arbor_cli::{
     StartupFileKind, StartupLoadContext, eval_config_contents_with_kind, eval_source,
     report_startup_file_not_found,
 };
-use nu_config::ConfigFileKind;
-use nu_engine::exit::kill_jobs_and_exit;
-use nu_protocol::{
+use arbor_config::ConfigFileKind;
+use arbor_engine::exit::kill_jobs_and_exit;
+use arbor_protocol::{
     Config, PipelineData, Spanned,
     engine::{EngineState, Stack},
     report_shell_error,
@@ -257,7 +257,7 @@ pub(crate) fn read_vendor_autoload_files(engine_state: &mut EngineState, stack: 
     );
 
     // Read from the pre-resolved autoload directories (resolved in
-    // `nu_config::resolve_paths()` during startup). Vendor dirs are evaluated
+    // `arbor_config::resolve_paths()` during startup). Vendor dirs are evaluated
     // first, then user dirs, so users can override vendor autoload files.
     // Clone the dir lists to avoid borrowing engine_state twice (once for the
     // iter and again inside the closure for eval_config_contents).

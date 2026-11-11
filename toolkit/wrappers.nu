@@ -54,13 +54,13 @@ export def build [
     }
 
     let plugins = [
-        nu_plugin_inc,
-        nu_plugin_gstat,
-        nu_plugin_query,
-        nu_plugin_polars,
-        nu_plugin_example,
-        nu_plugin_custom_values,
-        nu_plugin_formats,
+        arbor_plugin_inc,
+        arbor_plugin_gstat,
+        arbor_plugin_query,
+        arbor_plugin_polars,
+        arbor_plugin_example,
+        arbor_plugin_custom_values,
+        arbor_plugin_formats,
     ]
 
     for plugin in $plugins {
@@ -91,20 +91,20 @@ export def install [
     ...features: string@"nu-complete list features"  # a space-separated list of feature to install with Nushell
     --all # install all plugins with Nushell
 ] {
-    touch crates/nu-cmd-lang/build.rs # needed to make sure `version` has the correct `commit_hash`
+    touch crates/arbor-cmd-lang/build.rs # needed to make sure `version` has the correct `commit_hash`
     ^cargo install --path . --features ($features | default [] | str join ",") --locked --force
     if not $all {
         return
     }
 
     let plugins = [
-        nu_plugin_inc,
-        nu_plugin_gstat,
-        nu_plugin_query,
-        nu_plugin_polars,
-        nu_plugin_example,
-        nu_plugin_custom_values,
-        nu_plugin_formats,
+        arbor_plugin_inc,
+        arbor_plugin_gstat,
+        arbor_plugin_query,
+        arbor_plugin_polars,
+        arbor_plugin_example,
+        arbor_plugin_custom_values,
+        arbor_plugin_formats,
     ]
 
     for plugin in $plugins {

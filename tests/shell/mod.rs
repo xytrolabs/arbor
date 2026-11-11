@@ -1,4 +1,4 @@
-use nu_test_support::{
+use arbor_test_support::{
     fs::Stub::{FileWithContent, FileWithContentToBeTrimmed},
     prelude::*,
 };
@@ -28,7 +28,7 @@ fn plugins_are_declared_with_wix() -> Result {
             | get Directory.children.Component.children
             | each { |it| echo $it | first }
             | skip
-            | where File.attributes.Name =~ "nu_plugin"
+            | where File.attributes.Name =~ "arbor_plugin"
             | str substring [_, -4] File.attributes.Name
             | get File.attributes.Name
             | sort-by
@@ -57,7 +57,7 @@ fn do_not_panic_if_broken_pipe() -> Result {
 #[case::stdout(std::fs::File::create("/dev/full").unwrap(), std::process::Stdio::null())]
 #[case::stderr(std::process::Stdio::null(), std::fs::File::create("/dev/full").unwrap())]
 #[timeout(std::time::Duration::from_secs(5))]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[serial]
 #[deps(NU)]
 fn exit_failure_if_output_full(
@@ -273,7 +273,7 @@ fn run_in_noninteractive_mode() {
 // Code the parser tries more than once still warns once per call.
 #[case::retried_parse("@deprecated --report every\ndef g [] { 1 }\n[-(g)(2)] | ignore", 1)]
 #[case::range_bound("@deprecated --report every\ndef g [] { 1 }\n1..(g) | ignore", 1)]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU)]
 fn commands_report_every_parse_warning(#[case] code: &str, #[case] expected: usize) -> Result {
     let output = std::process::Command::new(NU.path())
@@ -281,7 +281,7 @@ fn commands_report_every_parse_warning(#[case] code: &str, #[case] expected: usi
         .output()?;
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert_eq!(
-        stderr.matches("nu::parser::deprecated").count(),
+        stderr.matches("arbor::parser::deprecated").count(),
         expected,
         "{stderr}"
     );
@@ -303,7 +303,7 @@ fn script_reports_every_parse_warning() -> Result {
             .output()?;
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert_eq!(
-            stderr.matches("nu::parser::deprecated").count(),
+            stderr.matches("arbor::parser::deprecated").count(),
             2,
             "{stderr}"
         );
@@ -368,7 +368,7 @@ fn startup_time_while_config_is_evaluated() -> Result {
     "try { ^$env.TEST_NU_BIN -n -c 'exit 1' } catch { print caught }",
     "caught\n"
 )]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU)]
 fn try_catch_inherited_external_output_has_no_extra_blank_line(
     #[case] script: &str,
@@ -402,7 +402,7 @@ fn try_catch_inherited_external_output_has_no_extra_blank_line(
 #[case::save_stderr(
     "let d = mktemp -d; {} | save ($d | path join out) --stderr ($d | path join err); [(open --raw ($d | path join out)) (open --raw ($d | path join err))] | to nuon"
 )]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU)]
 fn try_catch_keeps_a_piped_stderr_of_a_successful_external(
     #[case] consumer: &str,
@@ -458,7 +458,7 @@ fn try_catch_keeps_a_piped_stderr_of_a_successful_external(
     "caught\ndone\n",
     ""
 )]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU)]
 fn try_catch_piped_into_ignore_catches_only_a_failing_external(
     #[case] script: &str,
@@ -1094,7 +1094,7 @@ fn source_after_source_env_still_registers_defs() -> Result {
         let () = tester.run("source-env lib.nu")?;
         tester
             .run("from_lib")
-            .expect_error_code_eq("nu::shell::external_command")?;
+            .expect_error_code_eq("arbor::shell::external_command")?;
 
         let () = tester.run("source lib.nu")?;
         tester.run("from_lib").expect_value_eq(7)?;
@@ -1117,14 +1117,14 @@ fn source_after_source_env_still_registers_lets() -> Result {
         let () = tester.run("source-env lets.nu")?;
         tester
             .run("$foo")
-            .expect_error_code_eq("nu::parser::variable_not_found")?;
+            .expect_error_code_eq("arbor::parser::variable_not_found")?;
         let () = tester.run("source lets.nu")?;
         tester.run("$foo").expect_value_eq(1)?;
 
         let () = tester.run("source-env consts.nu")?;
         tester
             .run("$bar")
-            .expect_error_code_eq("nu::parser::variable_not_found")?;
+            .expect_error_code_eq("arbor::parser::variable_not_found")?;
         let () = tester.run("source consts.nu")?;
         tester.run("$bar").expect_value_eq(2)?;
         Ok(())
@@ -1452,7 +1452,7 @@ fn main_script_alias_persists() -> Result {
 }
 
 #[test]
-#[exp(nu_experimental::NATIVE_CLIP)]
+#[exp(arbor_experimental::NATIVE_CLIP)]
 fn builtin_commands_can_be_shadowed_and_extended() -> Result {
     // Demonstrate that importing a module can shadow built-in commands and
     // add new subcommands, which is the motivating use case for this PR.

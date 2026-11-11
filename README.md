@@ -95,8 +95,8 @@ git fetch upstream --tags
 git merge upstream/main
 ```
 
-Conflicts are expected only in `Cargo.toml`, `crates/nu-config/src/paths.rs`,
-`crates/nu-config/src/resolve.rs`, `src/command.rs` and this README.
+Conflicts are expected only in `Cargo.toml`, `crates/arbor-config/src/paths.rs`,
+`crates/arbor-config/src/resolve.rs`, `src/command.rs` and this README.
 
 ## License
 

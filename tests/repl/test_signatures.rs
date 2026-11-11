@@ -1,5 +1,5 @@
-use nu_protocol::Type;
-use nu_test_support::prelude::*;
+use arbor_protocol::Type;
+use arbor_test_support::prelude::*;
 use pretty_assertions::assert_matches;
 
 use crate::repl::tests::{TestResult, fail_test, run_test};
@@ -476,7 +476,7 @@ fn closure_param_list_not_terminated(#[case] input: &str) -> TestResult {
 fn positional_after_rest(#[case] code: &str) -> Result {
     test()
         .run(code)
-        .expect_error_code_eq("nu::parser::positional_after_rest")
+        .expect_error_code_eq("arbor::parser::positional_after_rest")
 }
 
 #[test]
@@ -499,7 +499,7 @@ fn flag_after_rest() -> Result {
 fn duplicate_parameters(#[case] code: &str) -> Result {
     test()
         .run(code)
-        .expect_error_code_eq("nu::parser::duplicate_parameter")
+        .expect_error_code_eq("arbor::parser::duplicate_parameter")
 }
 
 /// `_` may name several parameters, to ignore those arguments.

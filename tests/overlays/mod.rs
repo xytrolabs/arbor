@@ -1,6 +1,6 @@
 use itertools::Itertools;
-use nu_test_support::fs::Stub::{FileWithContent, FileWithContentToBeTrimmed};
-use nu_test_support::prelude::*;
+use arbor_test_support::fs::Stub::{FileWithContent, FileWithContentToBeTrimmed};
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 
 #[rstest]
@@ -59,7 +59,7 @@ fn overlay_prefix_mismatch<const C: usize>(#[case] commands: [&str; C]) -> Resul
         .expect_parse_error()?;
     test()
         .run_multiple(commands)
-        .expect_error_code_eq("nu::parser::overlay_prefix_mismatch")?;
+        .expect_error_code_eq("arbor::parser::overlay_prefix_mismatch")?;
     Ok(())
 }
 
@@ -792,7 +792,7 @@ fn overlay_cant_rename_existing_overlay() -> Result {
     test().run(commands.join("; ")).expect_parse_error()?;
     test()
         .run_multiple(commands)
-        .expect_error_code_eq("nu::parser::cant_add_overlay_help")?;
+        .expect_error_code_eq("arbor::parser::cant_add_overlay_help")?;
     Ok(())
 }
 
@@ -822,7 +822,7 @@ fn overlay_hide_renamed_overlay() -> Result {
     test().run(commands.join("; ")).expect_shell_error()?;
     test()
         .run_multiple(commands)
-        .expect_error_code_eq("nu::shell::external_command")?;
+        .expect_error_code_eq("arbor::shell::external_command")?;
     Ok(())
 }
 
@@ -1322,10 +1322,10 @@ fn alias_overlay_hide() -> Result {
 
     test()
         .run(commands.join("; "))
-        .expect_error_code_eq("nu::shell::external_command")?;
+        .expect_error_code_eq("arbor::shell::external_command")?;
     test()
         .run_multiple(commands)
-        .expect_error_code_eq("nu::shell::external_command")?;
+        .expect_error_code_eq("arbor::shell::external_command")?;
     Ok(())
 }
 

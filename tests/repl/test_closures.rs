@@ -17,7 +17,7 @@ fn do_one_argument() -> TestResult {
 #[test]
 fn do_missing_argument() -> TestResult {
     let input = "do {|x| $x}";
-    let expected = "nu::shell::missing_parameter";
+    let expected = "arbor::shell::missing_parameter";
     fail_test(input, expected)
 }
 
@@ -31,7 +31,7 @@ fn do_typed_argument() -> TestResult {
 #[test]
 fn do_type_mismatch() -> TestResult {
     let input = "do {|x: int| $x} 4.2";
-    let expected = "nu::shell::cant_convert";
+    let expected = "arbor::shell::cant_convert";
     fail_test(input, expected)
 }
 

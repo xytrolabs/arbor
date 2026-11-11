@@ -1,0 +1,86 @@
+[package]
+authors.workspace = true
+description = "Support for writing Nushell tests"
+repository = "https://github.com/nushell/nushell/tree/main/crates/arbor-test-support"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+name = "arbor-test-support"
+version.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+
+[lib]
+doctest = false
+bench = false
+
+[lints]
+workspace = true
+
+[features]
+os = [
+  "arbor-cli",
+  "arbor-cmd-lang/os",
+  "arbor-command/os",
+  "arbor-engine/os",
+  "arbor-protocol/os",
+  "arbor-utils/os",
+  "dep:arbor-tui",
+]
+network = ["arbor-command/network"]
+rustls-tls = ["arbor-command/rustls-tls"]
+plugin = [
+  "dep:arbor-cmd-plugin",
+  "dep:arbor-plugin-core",
+  "dep:arbor-plugin-engine",
+  "arbor-protocol/plugin",
+  "os",
+]
+
+[dependencies]
+arbor-cli = { workspace = true, optional = true }
+arbor-cmd-base.workspace = true
+arbor-cmd-extra.workspace = true
+arbor-cmd-lang.workspace = true
+arbor-cmd-plugin = { workspace = true, optional = true }
+arbor-command.workspace = true
+arbor-tui = { workspace = true, optional = true }
+arbor-engine.workspace = true
+arbor-experimental.workspace = true
+arbor-glob.workspace = true
+arbor-parser.workspace = true
+arbor-path.workspace = true
+arbor-plugin-core = { workspace = true, optional = true }
+arbor-plugin-engine = { workspace = true, optional = true }
+arbor-protocol.workspace = true
+arbor-std.workspace = true
+arbor-test-support-macros.workspace = true
+arbor-utils.workspace = true
+
+derive_more = { workspace = true, features = ["debug"] }
+indoc = { workspace = true }
+itertools = { workspace = true }
+kitest = { workspace = true }
+lexopt = { workspace = true }
+linkme = { workspace = true }
+miette = { workspace = true }
+nu-ansi-term = { workspace = true }
+num-format = { workspace = true }
+parking_lot = { workspace = true }
+pastey = { workspace = true }
+serde_json = { workspace = true }
+tempfile = { workspace = true }
+thiserror = { workspace = true }
+which = { workspace = true }
+
+[target.'cfg(unix)'.dependencies]
+gatekeeper = { workspace = true }
+
+[dev-dependencies]
+# doc tests use the "os" feature of `arbor-command`
+arbor-cmd-lang = { workspace = true, features = ["default"] }
+arbor-command = { workspace = true, features = ["default"] }
+
+bytes = { workspace = true }
+rstest = { workspace = true }

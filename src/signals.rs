@@ -1,5 +1,5 @@
-use nu_engine::exit::kill_all_jobs;
-use nu_protocol::{
+use arbor_engine::exit::kill_all_jobs;
+use arbor_protocol::{
     Handlers, SignalAction, Signals,
     engine::{EngineState, Jobs},
 };
@@ -45,7 +45,7 @@ fn handle_interrupt(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nu_protocol::{
+    use arbor_protocol::{
         JobId,
         engine::{Job, ThreadJob},
     };

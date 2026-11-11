@@ -1,7 +1,7 @@
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 
-use nu_test_support::fs::Stub::{EmptyFile, FileWithContentToBeTrimmed};
+use arbor_test_support::fs::Stub::{EmptyFile, FileWithContentToBeTrimmed};
 
 #[rstest]
 #[case::basic(r#""line1\nline2""#, "line1\nline2")]

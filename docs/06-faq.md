@@ -238,7 +238,7 @@ git merge upstream/main
 ```
 
 Conflicts are normally limited to `Cargo.toml`,
-`crates/nu-config/src/paths.rs`, `crates/nu-config/src/resolve.rs`,
+`crates/arbor-config/src/paths.rs`, `crates/arbor-config/src/resolve.rs`,
 `src/command.rs`, the docs and the README.
 
 ## Where are the docs for the language itself?

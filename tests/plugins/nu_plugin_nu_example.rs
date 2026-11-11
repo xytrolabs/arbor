@@ -1,20 +1,20 @@
 use std::process::Command;
 
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 
 #[test]
 #[deps(NU)]
 fn call() -> Result {
     let output = Command::new(NU.path())
-        .env(nu_utils::consts::NATIVE_PATH_ENV_VAR, NU.bin_dir())
+        .env(arbor_utils::consts::NATIVE_PATH_ENV_VAR, NU.bin_dir())
         .current_dir(WORKSPACE_ROOT.as_path())
         .args([
             "--no-config-file",
             "--no-std-lib",
             "--plugins",
-            "crates/nu_plugin_nu_example/nu_plugin_nu_example.nu",
+            "crates/arbor_plugin_nu_example/arbor_plugin_nu_example.nu",
             "--commands",
-            "nu_plugin_nu_example 4242 teststring",
+            "arbor_plugin_nu_example 4242 teststring",
         ])
         .output()?;
 
@@ -24,7 +24,7 @@ fn call() -> Result {
     assert_contains("one", stdout);
     assert_contains("two", stdout);
     assert_contains("three", stdout);
-    assert_contains("name: nu_plugin_nu_example", stderr);
+    assert_contains("name: arbor_plugin_nu_example", stderr);
     assert_contains("4242", stderr);
     assert_contains("teststring", stderr);
     Ok(())

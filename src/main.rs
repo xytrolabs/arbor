@@ -17,21 +17,21 @@ use crate::{
 };
 use log::{Level, trace};
 use miette::Result;
-use nu_cli::gather_parent_env_vars;
-use nu_config::{CliOverrides, ConfigError, ConfigWarning, SystemEnv, resolve_paths};
-use nu_engine::{
+use arbor_cli::gather_parent_env_vars;
+use arbor_config::{CliOverrides, ConfigError, ConfigWarning, SystemEnv, resolve_paths};
+use arbor_engine::{
     convert_env_values,
     exit::{kill_all_jobs, kill_jobs_and_exit},
 };
 #[cfg(feature = "plugin")]
-use nu_path::absolute_with;
-use nu_protocol::{
+use arbor_path::absolute_with;
+use arbor_protocol::{
     ByteStream, Config, IntoValue, PipelineData, ShellError, Span, Spanned, Type, Value,
     engine::{EngineState, Stack},
     record, report_shell_error,
 };
-use nu_std::load_standard_library;
-use nu_utils::perf;
+use arbor_std::load_standard_library;
+use arbor_utils::perf;
 use run::{run_commands, run_file, run_repl};
 use signals::ctrlc_protection;
 use std::{borrow::Cow, io::Write, path::PathBuf, str::FromStr, sync::Arc};
@@ -61,7 +61,7 @@ fn current_dir_from_environment() -> PathBuf {
         (Ok(cwd), _) => cwd,
         (_, Ok(pwd)) => pwd.into(),
         _ => {
-            if let Some(home) = nu_path::home_dir() {
+            if let Some(home) = arbor_path::home_dir() {
                 home.into_std_path_buf()
             } else {
                 current_exe_directory()
@@ -102,7 +102,7 @@ fn main() -> Result<()> {
     // `--lsp`, `--mcp` and `--dap` servers. It starts inside the shell, as bash's and zsh's timers
     // do, rather than at process creation: the process keeps its creation time and CPU time across
     // `exec`, so after `exec nu` those would also count the program that ran before.
-    let entire_start_time = nu_utils::time::Instant::now();
+    let entire_start_time = arbor_utils::time::Instant::now();
     let mut start_time = entire_start_time;
     // Replicated from `miette::set_panic_hook`, but writes via `writeln!(io::stderr(), …)`
     // instead of `eprintln!`. `eprintln!`/`println!` panic on a broken stderr/stdout
@@ -113,7 +113,7 @@ fn main() -> Result<()> {
     std::panic::set_hook(Box::new(|info| {
         // Completion sources are isolated and convert their panics into ShellErrors. The hook
         // runs before catch_unwind, so do not print a second, misleading prompt-level panic.
-        if nu_cli::completion_source_is_active() {
+        if arbor_cli::completion_source_is_active() {
             return;
         }
         use miette::Context;
@@ -164,10 +164,10 @@ fn main() -> Result<()> {
     let version = env!("CARGO_PKG_VERSION")
         .parse()
         .expect("cargo sets valid version");
-    nu_cmd_lang::VERSION.set(version).expect("VERSION is unset");
+    arbor_cmd_lang::VERSION.set(version).expect("VERSION is unset");
 
     let cargo_features = env!("NU_FEATURES").split(",").map(Cow::Borrowed).collect();
-    nu_cmd_lang::VERSION_NU_FEATURES
+    arbor_cmd_lang::VERSION_NU_FEATURES
         .set(cargo_features)
         .expect("VERSION_NU_FEATURES is unset");
 
@@ -179,7 +179,7 @@ fn main() -> Result<()> {
     }
 
     #[cfg(all(feature = "rustls-tls", feature = "network"))]
-    nu_command::tls::CRYPTO_PROVIDER.default();
+    arbor_command::tls::CRYPTO_PROVIDER.default();
 
     // ── Resolve all config paths ──────────────────────────────────────────
     // Path ownership (read this before changing startup):
@@ -219,7 +219,7 @@ fn main() -> Result<()> {
                 },
             );
             // Minimal fallback so the engine can still start
-            (nu_config::NushellConfigDirs::empty(), vec![])
+            (arbor_config::NushellConfigDirs::empty(), vec![])
         }
     };
 
@@ -247,7 +247,7 @@ fn main() -> Result<()> {
     // (`read_plugin_file` / `add_plugin_file`), which is skipped under
     // `--no-config-file` (`-n`). Leaving it `None` in that case preserves the
     // existing `plugin use` error ("Plugin registry file not set") and matches
-    // pre-`nu-config` behavior.
+    // pre-`arbor-config` behavior.
     //
     // `$nu.plugin-path` still reports the resolved default via
     // `config_dirs.plugin_file` when `plugin_path` is unset (see `create_nu_constant`).
@@ -263,7 +263,7 @@ fn main() -> Result<()> {
     let mut default_nu_plugin_dirs_path = engine_state.config_dirs.config_home.clone();
     default_nu_plugin_dirs_path.push("plugins");
     engine_state.add_env_var("NU_PLUGIN_DIRS".to_string(), Value::test_list(vec![]));
-    let mut working_set = nu_protocol::engine::StateWorkingSet::new(&engine_state);
+    let mut working_set = arbor_protocol::engine::StateWorkingSet::new(&engine_state);
     // No source span — this is a built-in variable defined at startup
     let var_id = working_set.add_variable(
         b"$NU_PLUGIN_DIRS".into(),
@@ -291,7 +291,7 @@ fn main() -> Result<()> {
     // connection is the lifetime anchor for `mode=memory&cache=shared` and is the
     // only connection used by `stor` / memdb `query db` (serialized via a mutex).
     #[cfg(feature = "sqlite")]
-    nu_command::init_shared_memory_db()?;
+    arbor_command::init_shared_memory_db()?;
 
     engine_state.is_lsp = parsed_nu_cli_args.is_lsp();
     // Here, not in the `--dap` and `--mcp` branches at the end: `generate_nu_constant()`
@@ -305,10 +305,10 @@ fn main() -> Result<()> {
     engine_state.history_enabled = parsed_nu_cli_args.no_history.is_none();
 
     // Arbor: install the Ctrl+B move-to-background shortcut from config.
-    // `nu-system` owns the process-global terminal state, so this is a single
+    // `arbor-system` owns the process-global terminal state, so this is a single
     // startup call; an invalid value falls back to Ctrl+B inside.
     #[cfg(unix)]
-    nu_system::background_key::set_shortcut(&engine_state.get_config().arbor.bg_shortcut);
+    arbor_system::background_key::set_shortcut(&engine_state.get_config().arbor.bg_shortcut);
 
     let use_color = engine_state
         .get_config()
@@ -316,7 +316,7 @@ fn main() -> Result<()> {
         .get(&engine_state);
 
     // Set up logger
-    start_time = nu_utils::time::Instant::now();
+    start_time = arbor_utils::time::Instant::now();
     let level_opt = parsed_nu_cli_args
         .log_level
         .as_ref()
@@ -387,12 +387,12 @@ fn main() -> Result<()> {
 
     #[cfg(unix)]
     {
-        start_time = nu_utils::time::Instant::now();
+        start_time = arbor_utils::time::Instant::now();
         terminal::acquire(engine_state.is_interactive);
         perf!("acquire_terminal", start_time, use_color);
     }
 
-    start_time = nu_utils::time::Instant::now();
+    start_time = arbor_utils::time::Instant::now();
     // No source span — default config is synthesized at startup
     engine_state.add_env_var(
         "config".into(),
@@ -405,13 +405,13 @@ fn main() -> Result<()> {
         Value::record(record! {}, Span::unknown()),
     );
 
-    start_time = nu_utils::time::Instant::now();
+    start_time = arbor_utils::time::Instant::now();
     // First, set up env vars as strings only
     gather_parent_env_vars(&mut engine_state, init_cwd.as_ref());
     perf!("gather env vars", start_time, use_color);
 
     let mut stack = Stack::new();
-    start_time = nu_utils::time::Instant::now();
+    start_time = arbor_utils::time::Instant::now();
     let config = engine_state.get_config();
     let use_color = config.use_ansi_coloring.get(&engine_state);
     // Translate environment variables from Strings to Values
@@ -421,7 +421,7 @@ fn main() -> Result<()> {
     perf!("Convert path to list", start_time, use_color);
 
     // Set up NU_LIB_DIRS: constant = defaults + env + -I, env = env + -I
-    start_time = nu_utils::time::Instant::now();
+    start_time = arbor_utils::time::Instant::now();
     {
         /// Parse a string into a list of paths, splitting on the given separators.
         fn parse_path_list(value: &str, separators: &[char]) -> Vec<String> {
@@ -481,7 +481,7 @@ fn main() -> Result<()> {
         );
 
         // Set $NU_LIB_DIRS as a constant with the same full list
-        let mut working_set = nu_protocol::engine::StateWorkingSet::new(&engine_state);
+        let mut working_set = arbor_protocol::engine::StateWorkingSet::new(&engine_state);
         // No source span — built-in constant defined at startup
         let var_id = working_set.add_variable(
             b"$NU_LIB_DIRS".into(),
@@ -502,12 +502,12 @@ fn main() -> Result<()> {
     );
 
     if parsed_nu_cli_args.no_std_lib.is_none() {
-        start_time = nu_utils::time::Instant::now();
+        start_time = arbor_utils::time::Instant::now();
         load_standard_library(&mut engine_state)?;
         perf!("load standard library", start_time, use_color);
     }
 
-    start_time = nu_utils::time::Instant::now();
+    start_time = arbor_utils::time::Instant::now();
     // Set up the $nu constant before the IDE commands and the config files, which both read it
     engine_state.generate_nu_constant();
     perf!("create_nu_constant", start_time, use_color);
@@ -538,7 +538,7 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    start_time = nu_utils::time::Instant::now();
+    start_time = arbor_utils::time::Instant::now();
     let input = if let Some(redirect_stdin) = &parsed_nu_cli_args.redirect_stdin {
         trace!("redirecting stdin");
         PipelineData::byte_stream(ByteStream::stdin(redirect_stdin.span)?, None)
@@ -550,18 +550,18 @@ fn main() -> Result<()> {
 
     #[cfg(feature = "plugin")]
     if let Some(plugins) = &parsed_nu_cli_args.plugins {
-        use nu_plugin_engine::{GetPlugin, PluginDeclaration};
-        use nu_protocol::{ErrSpan, PluginIdentity, RegisteredPlugin, engine::StateWorkingSet};
+        use arbor_plugin_engine::{GetPlugin, PluginDeclaration};
+        use arbor_protocol::{ErrSpan, PluginIdentity, RegisteredPlugin, engine::StateWorkingSet};
 
         // Load any plugins specified with --plugins
-        start_time = nu_utils::time::Instant::now();
+        start_time = arbor_utils::time::Instant::now();
 
         let mut working_set = StateWorkingSet::new(&engine_state);
         for plugin_filename in plugins {
             // Make sure the plugin filenames are absolute
             let filename = absolute_with(&plugin_filename.item, &init_cwd)
                 .map_err(|err| {
-                    nu_protocol::shell_error::io::IoError::new_internal_with_path(
+                    arbor_protocol::shell_error::io::IoError::new_internal_with_path(
                         err,
                         "Could not resolve plugin path",
                         PathBuf::from(&plugin_filename.item),
@@ -574,7 +574,7 @@ fn main() -> Result<()> {
                 .map_err(ShellError::from)?;
 
             // Create the plugin and add it to the working set
-            let plugin = nu_plugin_engine::add_plugin_to_working_set(&mut working_set, &identity)?;
+            let plugin = arbor_plugin_engine::add_plugin_to_working_set(&mut working_set, &identity)?;
 
             // Spawn the plugin to get the metadata and signatures
             let interface = plugin.clone().get_plugin(None)?;
@@ -596,7 +596,7 @@ fn main() -> Result<()> {
     match run_mode {
         #[cfg(feature = "mcp")]
         RunMode::Mcp => {
-            start_time = nu_utils::time::Instant::now();
+            start_time = arbor_utils::time::Instant::now();
             let mcp_transport_kind = parsed_nu_cli_args
                 .mcp_transport
                 .as_ref()
@@ -608,9 +608,9 @@ fn main() -> Result<()> {
                     // Keep MCP stdio transport clean by capturing startup stdout in stack output.
                     // This is cross-platform and avoid spilling stdout into mcp messages.
                     // The `print` command also checks for MCP/LCP before printing to stdout.
-                    nu_protocol::engine::Stack::new().collect_value()
+                    arbor_protocol::engine::Stack::new().collect_value()
                 } else {
-                    nu_protocol::engine::Stack::new()
+                    arbor_protocol::engine::Stack::new()
                 };
                 config_files::setup_config(
                     &mut engine_state,
@@ -619,7 +619,7 @@ fn main() -> Result<()> {
                 );
             }
             let transport = match mcp_transport_kind {
-                Some("http") => nu_mcp::McpTransport::http(
+                Some("http") => arbor_mcp::McpTransport::http(
                     parsed_nu_cli_args.mcp_host.clone(),
                     parsed_nu_cli_args.mcp_port,
                 )
@@ -633,17 +633,17 @@ fn main() -> Result<()> {
                         .mcp_allowed_origins
                         .map(|origins| origins.into_iter().map(|s| s.item).collect()),
                 ),
-                _ => nu_mcp::McpTransport::Stdio,
+                _ => arbor_mcp::McpTransport::Stdio,
             };
             engine_state.finish_startup();
             perf!("mcp started", start_time, use_color);
-            nu_mcp::initialize_mcp_server(engine_state, transport)?;
+            arbor_mcp::initialize_mcp_server(engine_state, transport)?;
             Ok(())
         }
 
         #[cfg(feature = "lsp")]
         RunMode::Lsp => {
-            start_time = nu_utils::time::Instant::now();
+            start_time = arbor_utils::time::Instant::now();
             run_lsp(engine_state, parsed_nu_cli_args, use_color, start_time)
         }
 
@@ -653,7 +653,7 @@ fn main() -> Result<()> {
         // applies — return as soon as the DAP client disconnects.
         #[cfg(feature = "dap")]
         RunMode::Dap => {
-            start_time = nu_utils::time::Instant::now();
+            start_time = arbor_utils::time::Instant::now();
 
             // Debugged scripts should see the same shell the user has: aliases and
             // custom commands from config.nu, `$env` from env.nu, and `$env.config`
@@ -676,7 +676,7 @@ fn main() -> Result<()> {
             perf!("dap setup_config", start_time, use_color);
 
             engine_state.finish_startup();
-            nu_dap::run_stdio(engine_state);
+            arbor_dap::run_stdio(engine_state);
             Ok(())
         }
 

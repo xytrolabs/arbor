@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 
-use nu_protocol::{
+use arbor_protocol::{
     engine::{EngineState, StateWorkingSet},
     report_error::report_experimental_option_warning,
 };
@@ -14,10 +14,10 @@ pub fn load(engine_state: &EngineState, cli_args: &NushellCliArgs, has_script: b
     let working_set = StateWorkingSet::new(engine_state);
 
     if !should_disable_experimental_options(has_script, cli_args) {
-        let env_content = std::env::var(nu_experimental::ENV).unwrap_or_default();
-        let env_offset = format!("{}=", nu_experimental::ENV).len();
+        let env_content = std::env::var(arbor_experimental::ENV).unwrap_or_default();
+        let env_offset = format!("{}=", arbor_experimental::ENV).len();
 
-        for (env_warning, span) in nu_experimental::parse_env() {
+        for (env_warning, span) in arbor_experimental::parse_env() {
             let span_offset = (span.start + env_offset)..(span.end + env_offset);
             let mut diagnostic = miette::diagnostic!(
                 severity = miette::Severity::Warning,
@@ -32,7 +32,7 @@ pub fn load(engine_state: &EngineState, cli_args: &NushellCliArgs, has_script: b
 
             let error = miette::Error::from(diagnostic).with_source_code(format!(
                 "{}={}",
-                nu_experimental::ENV,
+                arbor_experimental::ENV,
                 env_content
             ));
             report_experimental_option_warning(None, &working_set, error.borrow());
@@ -40,7 +40,7 @@ pub fn load(engine_state: &EngineState, cli_args: &NushellCliArgs, has_script: b
     }
 
     for (cli_arg_warning, ctx) in
-        nu_experimental::parse_iter(cli_args.experimental_options.iter().flatten().map(|entry| {
+        arbor_experimental::parse_iter(cli_args.experimental_options.iter().flatten().map(|entry| {
             let cleaned = entry
                 .item
                 .trim()
@@ -53,7 +53,7 @@ pub fn load(engine_state: &EngineState, cli_args: &NushellCliArgs, has_script: b
         }))
     {
         // Skip labels when span is unknown (CLI args parsed before engine setup)
-        let labels = if ctx.span == nu_protocol::Span::unknown() {
+        let labels = if ctx.span == arbor_protocol::Span::unknown() {
             Vec::new()
         } else {
             vec![miette::LabeledSpan::new_with_span(None, ctx.span)]

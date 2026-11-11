@@ -4,7 +4,7 @@
 /// all following arguments as operands, even if they start with `-` or `--`.
 /// This aligns with POSIX Guideline 10:
 /// https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 
 #[test]
 fn echo_with_end_of_options_stops_flag_parsing() -> Result {

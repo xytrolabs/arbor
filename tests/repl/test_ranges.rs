@@ -1,5 +1,5 @@
 use crate::repl::tests::{TestResult, fail_test, run_test};
-use nu_test_support::prelude::*;
+use arbor_test_support::prelude::*;
 use rstest::rstest;
 
 #[test]
@@ -29,7 +29,7 @@ fn float_in_dec_range() -> TestResult {
 
 #[test]
 fn non_number_in_range() -> TestResult {
-    fail_test("'a' in 1..3", "nu::parser::operator_incompatible_types")
+    fail_test("'a' in 1..3", "arbor::parser::operator_incompatible_types")
 }
 
 #[test]

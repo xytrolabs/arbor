@@ -1,20 +1,20 @@
 #![allow(clippy::unwrap_used)]
 
-use nu_cli::{eval_source, evaluate_commands};
-use nu_config::ConfigFileKind;
-use nu_experimental::DC_GLOB;
-use nu_parser::{lex, lite_parse, parse, parse_block};
-use nu_plugin_core::{Encoder, EncodingType};
-use nu_plugin_protocol::{PluginCallResponse, PluginOutput};
-use nu_protocol::{
+use arbor_cli::{eval_source, evaluate_commands};
+use arbor_config::ConfigFileKind;
+use arbor_experimental::DC_GLOB;
+use arbor_parser::{lex, lite_parse, parse, parse_block};
+use arbor_plugin_core::{Encoder, EncodingType};
+use arbor_plugin_protocol::{PluginCallResponse, PluginOutput};
+use arbor_protocol::{
     PipelineData, Signals, Span, Spanned, Type, TypeSet, Value,
     ast::PathMember,
     casing::Casing,
     engine::{EngineState, Stack, StateWorkingSet},
 };
-use nu_std::load_standard_library;
-use nu_table::{NuTable, TableTheme};
-use nu_test_support::{fs::nu_files, tester::parse_file};
+use arbor_std::load_standard_library;
+use arbor_table::{NuTable, TableTheme};
+use arbor_test_support::{fs::nu_files, tester::parse_file};
 use std::{
     env,
     fmt::Write,
@@ -28,7 +28,7 @@ use tango_bench::{IntoBenchmarks, benchmark_fn, tango_benchmarks};
 use tempfile::{Builder as TempDirBuilder, TempDir};
 
 fn load_bench_commands() -> EngineState {
-    nu_command::add_shell_command_context(nu_cmd_lang::create_default_context())
+    arbor_command::add_shell_command_context(arbor_cmd_lang::create_default_context())
 }
 
 fn setup_engine() -> EngineState {
@@ -38,14 +38,14 @@ fn setup_engine() -> EngineState {
 /// Build the engine the way the `nu` binary does (`src/command_context.rs` plus the standard
 /// library), so that real scripts and modules parse exactly as they do in the shell.
 fn setup_shell_engine() -> EngineState {
-    let engine_state = nu_cmd_lang::create_default_context();
+    let engine_state = arbor_cmd_lang::create_default_context();
     #[cfg(feature = "plugin")]
-    let engine_state = nu_cmd_plugin::add_plugin_command_context(engine_state);
-    let engine_state = nu_command::add_shell_command_context(engine_state);
-    let engine_state = nu_cmd_extra::add_extra_command_context(engine_state);
-    let engine_state = nu_cli::add_cli_context(engine_state);
-    let engine_state = nu_explore::add_explore_context(engine_state);
-    let mut engine_state = finish_engine_setup(nu_tui::add_tui_context(engine_state));
+    let engine_state = arbor_cmd_plugin::add_plugin_command_context(engine_state);
+    let engine_state = arbor_command::add_shell_command_context(engine_state);
+    let engine_state = arbor_cmd_extra::add_extra_command_context(engine_state);
+    let engine_state = arbor_cli::add_cli_context(engine_state);
+    let engine_state = arbor_explore::add_explore_context(engine_state);
+    let mut engine_state = finish_engine_setup(arbor_tui::add_tui_context(engine_state));
     load_standard_library(&mut engine_state).expect("the standard library loads");
     engine_state
 }
@@ -371,7 +371,7 @@ fn bench_load_standard_lib() -> impl IntoBenchmarks {
 fn bench_load_use_standard_lib() -> impl IntoBenchmarks {
     [benchmark_fn("load_use_standard_lib", move |b| {
         // We need additional commands like `format number` for the standard library
-        let engine = nu_cmd_extra::add_extra_command_context(setup_engine());
+        let engine = arbor_cmd_extra::add_extra_command_context(setup_engine());
         let commands = Spanned {
             item: "use std".into(),
             span: Span::test_data(),
@@ -447,7 +447,7 @@ fn bench_list_value_clone(items: usize) -> impl IntoBenchmarks {
 }
 
 fn bench_stack_list_get_var(items: usize) -> impl IntoBenchmarks {
-    use nu_protocol::VarId;
+    use arbor_protocol::VarId;
 
     let name = format!("stack_list_get_var_{items}");
     [benchmark_fn(name, move |b| {
@@ -786,7 +786,7 @@ fn bench_mut_record_update(n: usize) -> impl IntoBenchmarks {
 
 /// Stack-level: old path = clone value + upsert + add_var (forces SharedCow deep-copy).
 fn bench_stack_upsert_clone(n: usize) -> impl IntoBenchmarks {
-    use nu_protocol::VarId;
+    use arbor_protocol::VarId;
     let long_string = "x".repeat(n);
     let cell_path = vec![PathMember::test_string("a", false, Casing::Sensitive)];
     [benchmark_fn(format!("stack_upsert_clone_{n}"), move |b| {
@@ -794,7 +794,7 @@ fn bench_stack_upsert_clone(n: usize) -> impl IntoBenchmarks {
         let var_id = VarId::new(0);
         stack.add_var(
             var_id,
-            Value::test_record(nu_protocol::record!("a" => Value::test_string(&long_string))),
+            Value::test_record(arbor_protocol::record!("a" => Value::test_string(&long_string))),
         );
         let new_val = Value::test_string("x");
         let cell_path = cell_path.clone();
@@ -814,7 +814,7 @@ fn bench_stack_upsert_clone(n: usize) -> impl IntoBenchmarks {
 
 /// Stack-level: new path = get_var_mut / upsert_var_cell_path (unique ownership).
 fn bench_stack_upsert_inplace(n: usize) -> impl IntoBenchmarks {
-    use nu_protocol::VarId;
+    use arbor_protocol::VarId;
     let long_string = "x".repeat(n);
     let cell_path = vec![PathMember::test_string("a", false, Casing::Sensitive)];
     [benchmark_fn(
@@ -824,7 +824,7 @@ fn bench_stack_upsert_inplace(n: usize) -> impl IntoBenchmarks {
             let var_id = VarId::new(0);
             stack.add_var(
                 var_id,
-                Value::test_record(nu_protocol::record!("a" => Value::test_string(&long_string))),
+                Value::test_record(arbor_protocol::record!("a" => Value::test_string(&long_string))),
             );
             let new_val = Value::test_string("x");
             let cell_path = cell_path.clone();
@@ -844,7 +844,7 @@ fn bench_stack_upsert_inplace(n: usize) -> impl IntoBenchmarks {
 fn bench_upsert_record_clone(n: usize) -> impl IntoBenchmarks {
     let long_string = "x".repeat(n);
     let original =
-        Value::test_record(nu_protocol::record!("a" => Value::test_string(&long_string)));
+        Value::test_record(arbor_protocol::record!("a" => Value::test_string(&long_string)));
     [benchmark_fn(format!("upsert_record_clone_{n}"), move |b| {
         let original = original.clone();
         let new_val = Value::test_string("x");
@@ -867,7 +867,7 @@ fn bench_upsert_record_inplace(n: usize) -> impl IntoBenchmarks {
         format!("upsert_record_inplace_{n}"),
         move |b| {
             let mut value =
-                Value::test_record(nu_protocol::record!("a" => Value::test_string(&long_string)));
+                Value::test_record(arbor_protocol::record!("a" => Value::test_string(&long_string)));
             let new_val = Value::test_string("x");
             let cell_path = vec![PathMember::test_string("a", false, Casing::Sensitive)];
             b.iter(move || {
@@ -884,12 +884,12 @@ fn bench_upsert_record_inplace(n: usize) -> impl IntoBenchmarks {
 fn bench_upsert_list_clone(n: usize) -> impl IntoBenchmarks {
     let original = Value::test_list(
         (0..n)
-            .map(|i| Value::test_record(nu_protocol::record!("a" => Value::test_int(i as i64))))
+            .map(|i| Value::test_record(arbor_protocol::record!("a" => Value::test_int(i as i64))))
             .collect(),
     );
     [benchmark_fn(format!("upsert_list_clone_{n}"), move |b| {
         let original = original.clone();
-        let new_val = Value::test_record(nu_protocol::record!("a" => Value::test_int(999)));
+        let new_val = Value::test_record(arbor_protocol::record!("a" => Value::test_int(999)));
         let cell_path = vec![PathMember::test_int(0, false)];
         b.iter(move || {
             let mut cloned = original.clone();
@@ -907,10 +907,10 @@ fn bench_upsert_list_inplace(n: usize) -> impl IntoBenchmarks {
     [benchmark_fn(format!("upsert_list_inplace_{n}"), move |b| {
         let mut value = Value::test_list(
             (0..n)
-                .map(|i| Value::test_record(nu_protocol::record!("a" => Value::test_int(i as i64))))
+                .map(|i| Value::test_record(arbor_protocol::record!("a" => Value::test_int(i as i64))))
                 .collect(),
         );
-        let new_val = Value::test_record(nu_protocol::record!("a" => Value::test_int(999)));
+        let new_val = Value::test_record(arbor_protocol::record!("a" => Value::test_int(999)));
         let cell_path = vec![PathMember::test_int(0, false)];
         b.iter(move || {
             value
@@ -1195,12 +1195,12 @@ fn bench_type_widen_chain() -> impl IntoBenchmarks {
     })]
 }
 
-// Parsing benchmarks (nu-parser)
+// Parsing benchmarks (arbor-parser)
 // These benchmark names intentionally include source byte/char sizes for throughput reporting.
 // Benchmarks are broken into stages (lex, lite, parse_block, full parse) with three corpus sizes:
 // - small: synthetic short pipeline (noise-resistant signal)
 // - medium: synthetic generated pipeline (scales predictably)
-// - large: entire nu-std/std directory (all real stdlib code)
+// - large: entire arbor-std/std directory (all real stdlib code)
 // - real_world: toolkit/mod.nu (representative Nushell scripts)
 //
 // Each benchmark name encodes byte/char counts: parser_<stage>_<dataset>_<size>b_<chars>c
@@ -1208,15 +1208,15 @@ fn bench_type_widen_chain() -> impl IntoBenchmarks {
 // for publication in PR descriptions and performance tracking.
 
 const PARSER_REAL_WORLD_TOOLKIT_MOD: &str = include_str!("../toolkit/mod.nu");
-const PARSER_STD_HELP_MOD: &str = include_str!("../crates/nu-std/std/help/mod.nu");
-const PARSER_STD_LOG_MOD: &str = include_str!("../crates/nu-std/std/log/mod.nu");
-const PARSER_DOC_CONFIG: &str = include_str!("../crates/nu-config/default_files/doc_config.nu");
+const PARSER_STD_HELP_MOD: &str = include_str!("../crates/arbor-std/std/help/mod.nu");
+const PARSER_STD_LOG_MOD: &str = include_str!("../crates/arbor-std/std/log/mod.nu");
+const PARSER_DOC_CONFIG: &str = include_str!("../crates/arbor-config/default_files/doc_config.nu");
 
-/// Collect all .nu source files from crates/nu-std/std into a single concatenated string.
+/// Collect all .nu source files from crates/arbor-std/std into a single concatenated string.
 /// Files are sorted by path for deterministic output across runs.
 /// Returns None if no file could be read (will panic at benchmark time to fail loudly).
 fn collect_all_std_nu_sources() -> Option<String> {
-    let std_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/nu-std/std");
+    let std_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/arbor-std/std");
     let files = nu_files(std_root);
 
     let mut combined = String::new();
@@ -1402,7 +1402,7 @@ fn bench_parser_full_parse_ctx(dataset: &str, source: String) -> impl IntoBenchm
 /// from disk.
 fn parser_shell_corpus() -> Vec<(String, PathBuf)> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let std_root = root.join("crates/nu-std/std");
+    let std_root = root.join("crates/arbor-std/std");
     let mut corpus: Vec<(String, PathBuf)> = nu_files(&std_root)
         .into_iter()
         .map(|path| {
@@ -1420,7 +1420,7 @@ fn parser_shell_corpus() -> Vec<(String, PathBuf)> {
         })
         .collect();
     for name in ["default_config", "default_env", "doc_config", "doc_env"] {
-        let path = root.join(format!("crates/nu-config/default_files/{name}.nu"));
+        let path = root.join(format!("crates/arbor-config/default_files/{name}.nu"));
         corpus.push((name.to_string(), path));
     }
     corpus.push(("toolkit".to_string(), root.join("toolkit/mod.nu")));
@@ -1478,11 +1478,11 @@ fn parser_input_medium() -> String {
     create_parser_pipeline_script(80)
 }
 
-/// Large parser benchmark input: entire crates/nu-std/std directory as concatenated .nu files.
+/// Large parser benchmark input: entire crates/arbor-std/std directory as concatenated .nu files.
 /// Comprehensive real-world benchmark covering all stdlib modules.
 /// Panics if directory discovery or file reads fail to ensure reliable benchmarks.
 fn parser_input_large() -> String {
-    collect_all_std_nu_sources().expect("parser benchmark requires readable nu-std/std directory")
+    collect_all_std_nu_sources().expect("parser benchmark requires readable arbor-std/std directory")
 }
 
 /// Real-world parser benchmark input: toolkit/mod.nu (Nushell dev scripts).
@@ -1509,7 +1509,7 @@ fn parser_input_doc_config() -> String {
     PARSER_DOC_CONFIG.to_string()
 }
 
-// Table rendering benchmarks (nu-table)
+// Table rendering benchmarks (arbor-table)
 // Benchmark the NuTable::draw path for varying table sizes and themes.
 
 fn create_nu_table(rows: usize, cols: usize) -> NuTable {
@@ -1574,7 +1574,7 @@ tango_benchmarks!(
     bench_type_widen_large_records(),
     bench_type_widen_large_oneof(),
     bench_type_widen_chain(),
-    // Parsing (nu-parser)
+    // Parsing (arbor-parser)
     bench_parser_lex("small", parser_input_small()),
     bench_parser_lex("medium", parser_input_medium()),
     bench_parser_lex("large", parser_input_large()),
@@ -1771,7 +1771,7 @@ tango_benchmarks!(
     // MsgPack
     decode_msgpack(100, 5),
     decode_msgpack(10000, 15),
-    // Table rendering (nu-table)
+    // Table rendering (arbor-table)
     bench_table_render(10, 5),
     bench_table_render(100, 5),
     bench_table_render(1_000, 5),

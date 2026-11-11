@@ -1,0 +1,20 @@
+[package]
+authors.workspace = true
+description = "Nushell grid printing"
+repository = "https://github.com/nushell/nushell/tree/main/crates/arbor-term-grid"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+name = "arbor-term-grid"
+version.workspace = true
+
+[lib]
+bench = false
+
+[lints]
+workspace = true
+
+[dependencies]
+arbor-utils.workspace = true
+
+unicode-width = { workspace = true }

@@ -1,4 +1,4 @@
-use nu_test_support::{
+use arbor_test_support::{
     fs::Stub::{FileWithContent, FileWithContentToBeTrimmed},
     prelude::*,
 };

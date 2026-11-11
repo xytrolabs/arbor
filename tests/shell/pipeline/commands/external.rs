@@ -1,6 +1,6 @@
-use nu_test_support::fs::Stub::{EmptyFile, FileWithContent, FileWithContentToBeTrimmed};
-use nu_test_support::playground::Playground;
-use nu_test_support::prelude::*;
+use arbor_test_support::fs::Stub::{EmptyFile, FileWithContent, FileWithContentToBeTrimmed};
+use arbor_test_support::playground::Playground;
+use arbor_test_support::prelude::*;
 use pretty_assertions::{assert_eq, assert_matches};
 use rstest::rstest;
 
@@ -8,14 +8,14 @@ use rstest::rstest;
 fn shows_error_for_command_not_found() -> Result {
     test()
         .run("ferris_is_not_here.exe")
-        .expect_error_code_eq("nu::shell::external_command")
+        .expect_error_code_eq("arbor::shell::external_command")
 }
 
 #[test]
 fn shows_error_for_command_not_found_in_pipeline() -> Result {
     test()
         .run("ferris_is_not_here.exe | echo done")
-        .expect_error_code_eq("nu::shell::external_command")
+        .expect_error_code_eq("arbor::shell::external_command")
 }
 
 #[ignore]
@@ -154,7 +154,7 @@ fn command_substitution_wont_output_extra_newline() -> Result {
 #[rstest]
 #[case::err_pipe_long("err>|")]
 #[case::err_pipe_short("e>|")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(TESTBIN_ECHO_ENV_STDERR)]
 fn basic_err_pipe_works(#[case] redirection: &str) -> Result {
     let code =
@@ -168,7 +168,7 @@ fn basic_err_pipe_works(#[case] redirection: &str) -> Result {
 #[case::err_out_pipe_long("err+out>|")]
 #[case::out_err_pipe_short("o+e>|")]
 #[case::err_out_pipe_short("e+o>|")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(TESTBIN_ECHO_ENV_MIXED)]
 fn basic_outerr_pipe_works(#[case] redirection: &str) -> Result {
     let code = format!(
@@ -367,7 +367,7 @@ mod external_words {
     #[cfg_attr(not(windows), case::quoted_glob("*.toml", r#""*.toml""#))]
     #[cfg_attr(not(windows), case::bare_glob("*.toml", "*.toml"))]
     #[case::dollar_sign_in_name("$ sign.toml", r#""$ sign.toml""#)]
-    #[nu_test_support::test]
+    #[arbor_test_support::test]
     #[deps(TESTBIN_MEOW)]
     fn external_arg_with_special_characters(
         #[case] path: &str,
@@ -775,7 +775,7 @@ fn bad_config_file_restrict_cmd_running_with_commands() -> Result {
 #[case::fail_then_print_then_fail_default("fail 20 | print aa | fail", 1)]
 #[case::fail_default_then_print_then_fail("fail | print aa | fail 20", 20)]
 #[case::let_captures_failed_pipeline("let x = fail 20 | into int", 20)]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(NU, TESTBIN_FAIL, TESTBIN_NONU)]
 fn pipefail_feature(#[case] inp: &str, #[case] expect_code: i64) -> Result {
     let result: CompleteResult = test().run_with_data(

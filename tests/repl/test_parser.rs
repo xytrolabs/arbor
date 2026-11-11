@@ -1,12 +1,12 @@
 use pretty_assertions::assert_matches;
 use rstest::rstest;
 
-use nu_experimental::{CELL_PATH_TYPES, ENFORCE_RUNTIME_ANNOTATIONS};
-use nu_protocol::{
+use arbor_experimental::{CELL_PATH_TYPES, ENFORCE_RUNTIME_ANNOTATIONS};
+use arbor_protocol::{
     ParseError, ShellError, Type,
     ast::{Comparison, Operator},
 };
-use nu_test_support::{fs::Stub, prelude::*};
+use arbor_test_support::{fs::Stub, prelude::*};
 
 #[test]
 fn env_shorthand() -> Result {
@@ -502,7 +502,7 @@ fn bare_word_names() -> Result {
 fn duplicate_literal_names(#[case] code: &str) -> Result {
     test()
         .run(code)
-        .expect_error_code_eq("nu::parser::column_defined_twice")
+        .expect_error_code_eq("arbor::parser::column_defined_twice")
 }
 
 /// A key only known at runtime is still checked when the record is built.
@@ -510,7 +510,7 @@ fn duplicate_literal_names(#[case] code: &str) -> Result {
 fn duplicate_runtime_name() -> Result {
     test()
         .run("let k = 'a'; {a: 1, $k: 2}")
-        .expect_error_code_eq("nu::shell::column_defined_twice")
+        .expect_error_code_eq("arbor::shell::column_defined_twice")
 }
 
 /// An extra `]` after a list is unbalanced, as an extra `}` or `)` is.
@@ -521,7 +521,7 @@ fn duplicate_runtime_name() -> Result {
 fn list_extra_closing_bracket(#[case] code: &str) -> Result {
     test()
         .run(code)
-        .expect_error_code_eq("nu::parser::unbalanced_delimiter")
+        .expect_error_code_eq("arbor::parser::unbalanced_delimiter")
 }
 
 /// A word that isn't a list may have a `]` after its first bracket group closes, as glob and
@@ -630,7 +630,7 @@ fn append_assign_takes_pipeline() -> Result {
 #[rstest]
 #[case::bare("cococo")]
 #[case::quoted("`cococo`")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(TESTBIN_COCOCO)]
 fn assign_external_fails(#[case] external: &str) -> Result {
     let code = format!("$env.FOO = {external}");
@@ -648,7 +648,7 @@ fn assign_external_fails(#[case] external: &str) -> Result {
 #[rstest]
 #[case::with_caret("^cococo")]
 #[case::quoted_with_caret("^`cococo`")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[deps(TESTBIN_COCOCO)]
 fn assign_external_works(#[case] external: &str) -> Result {
     let code = format!("$env.FOO = {external}; $env.FOO");
@@ -865,20 +865,20 @@ fn percent_dynamic_dispatch_shows_help(#[case] args: &str) -> Result {
 }
 
 #[rstest]
-#[case::unknown_flag("sort", "--bogus", "nu::parser::unknown_flag")]
-#[case::unknown_short_flag("sort", "-x", "nu::parser::unknown_flag")]
-#[case::extra_positional("sort", "foo", "nu::parser::extra_positional")]
+#[case::unknown_flag("sort", "--bogus", "arbor::parser::unknown_flag")]
+#[case::unknown_short_flag("sort", "-x", "arbor::parser::unknown_flag")]
+#[case::extra_positional("sort", "foo", "arbor::parser::extra_positional")]
 // Only a bare word is a flag, as in a direct call, so a quoted one or one in a variable is a
 // positional argument.
-#[case::quoted_flag("sort", r#""--reverse""#, "nu::parser::extra_positional")]
-#[case::flag_in_a_variable("sort", "$flag", "nu::parser::extra_positional")]
-#[case::unknown_record_key("sort", "...{bogus: true}", "nu::shell::error")]
-#[case::bad_switch_value("sort", "--reverse=5", "nu::shell::cant_convert")]
-#[case::missing_flag_value("fill", "--width", "nu::parser::missing_flag_param")]
-#[case::missing_positional("str replace", "a", "nu::parser::missing_positional")]
+#[case::quoted_flag("sort", r#""--reverse""#, "arbor::parser::extra_positional")]
+#[case::flag_in_a_variable("sort", "$flag", "arbor::parser::extra_positional")]
+#[case::unknown_record_key("sort", "...{bogus: true}", "arbor::shell::error")]
+#[case::bad_switch_value("sort", "--reverse=5", "arbor::shell::cant_convert")]
+#[case::missing_flag_value("fill", "--width", "arbor::parser::missing_flag_param")]
+#[case::missing_positional("str replace", "a", "arbor::parser::missing_positional")]
 // As in a direct call, `--help` shows help only once the other arguments check out.
-#[case::help_with_an_extra_positional("sort", "foo --help", "nu::parser::extra_positional")]
-#[case::help_with_an_unknown_flag("sort", "--help --bogus", "nu::parser::unknown_flag")]
+#[case::help_with_an_extra_positional("sort", "foo --help", "arbor::parser::extra_positional")]
+#[case::help_with_an_unknown_flag("sort", "--help --bogus", "arbor::parser::unknown_flag")]
 fn percent_dynamic_dispatch_rejects_arguments_the_builtin_does_not(
     #[case] builtin: &str,
     #[case] args: &str,
@@ -1600,7 +1600,7 @@ mod plugin_tests {
     #[test]
     fn plugin_use_with_string_literal() -> Result {
         let err = test()
-            .run("plugin use 'nu-plugin-math'")
+            .run("plugin use 'arbor-plugin-math'")
             .expect_parse_error()?;
         assert_matches!(
             err,
@@ -1612,7 +1612,7 @@ mod plugin_tests {
     #[test]
     fn plugin_use_with_string_constant() -> Result {
         let input = "
-            const file = 'nu-plugin-math'
+            const file = 'arbor-plugin-math'
             plugin use $file
         ";
         // should not fail with `not a constant`
@@ -1627,7 +1627,7 @@ mod plugin_tests {
     #[test]
     fn plugin_use_with_string_variable() -> Result {
         let input = "
-            let file = 'nu-plugin-math'
+            let file = 'arbor-plugin-math'
             plugin use $file
         ";
         let err = test().run(input).expect_parse_error()?;
@@ -1893,7 +1893,7 @@ fn let_variable_record_runtime_mismatch() -> Result {
 
     // This conversion should fail due to a key mismatch
     let err = err.into_labeled()?;
-    assert_eq!(err.code.as_deref(), Some("nu::shell::type_mismatch"));
+    assert_eq!(err.code.as_deref(), Some("arbor::shell::type_mismatch"));
     let labels = err
         .labels
         .iter()
@@ -1908,7 +1908,7 @@ fn let_variable_record_runtime_mismatch() -> Result {
 #[case::string_int("a.0", "record<b: int>")]
 #[case::string_int_string("a.0.b", "int")]
 #[case::string_string_int("a.b.0", "int")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[exp(CELL_PATH_TYPES)]
 fn let_assign_record_cell_path_to_wrong_type(
     #[case] cell_path: &str,
@@ -1937,7 +1937,7 @@ fn let_assign_record_cell_path_to_wrong_type(
 #[case::string_string("a.b", "list<list<int>>")]
 #[case::string_string_int("a.b.0", "list<int>")]
 #[case::string_string_int_int("a.b.0.0", "int")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[exp(CELL_PATH_TYPES)]
 fn let_assign_list_cell_path_to_wrong_type(
     #[case] cell_path: &str,
@@ -1966,7 +1966,7 @@ fn let_assign_list_cell_path_to_wrong_type(
 #[case::string_string("a.b", "list<list<int>>")]
 #[case::string_string_int("a.b.0", "list<int>")]
 #[case::string_string_int_int("a.b.0.0", "int")]
-#[nu_test_support::test]
+#[arbor_test_support::test]
 #[exp(CELL_PATH_TYPES)]
 fn let_assign_table_cell_path_to_wrong_type(
     #[case] cell_path: &str,
