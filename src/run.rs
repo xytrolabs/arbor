@@ -196,6 +196,49 @@ pub(crate) fn run_file(
     }
 
     let start_time = Instant::now();
+
+    // Arbor: `.ind` / `.arbor` / `.waash` scripts are written in Indent, a
+    // separate language. Hand them to the Indent runtime instead of the Nu
+    // parser. Config has already been loaded above, so `$env.config.arbor`
+    // is honoured.
+    if !script_name.is_empty()
+        && nu_cli::indent::script_kind(std::path::Path::new(&script_name))
+            == nu_cli::indent::ScriptKind::Indent
+        && engine_state.get_config().arbor.indent_scripts
+    {
+        let path = script_name.clone();
+        let arbor_config = &engine_state.get_config().arbor;
+
+        // Explicit config path wins, then PATH / known locations.
+        let indent_bin = if arbor_config.indent_binary.is_empty() {
+            nu_cli::indent::find_indent_binary()
+        } else {
+            Some(std::path::PathBuf::from(&arbor_config.indent_binary))
+        };
+
+        let Some(indent_bin) = indent_bin else {
+            eprintln!(
+                "arbor: could not find the `indent` runtime (needed for {path}).\n\
+                 Install Indent, or set $env.config.arbor.indent_binary."
+            );
+            kill_jobs_and_exit(engine_state, 127);
+        };
+
+        let lib_dir = nu_cli::indent::find_helper_lib();
+        let exit_code = match nu_cli::indent::run_indent_file(
+            &indent_bin,
+            std::path::Path::new(&path),
+            lib_dir.as_deref(),
+        ) {
+            Ok(code) => code,
+            Err(err) => {
+                eprintln!("arbor: failed to run Indent script: {err}");
+                kill_jobs_and_exit(engine_state, 1);
+            }
+        };
+        kill_jobs_and_exit(engine_state, exit_code);
+    }
+
     let result = evaluate_file(
         script_name,
         &args_to_script,

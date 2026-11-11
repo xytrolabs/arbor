@@ -133,6 +133,16 @@ impl ExitStatusFuture {
             ExitStatusFuture::Finished(Ok(status)) => Ok(*status),
             ExitStatusFuture::Finished(Err(err)) => Err(err.as_ref().clone()),
             ExitStatusFuture::Running(receiver) => {
+                // Arbor: if the command was moved to the background (Ctrl+B),
+                // do not block the REPL waiting for it to finish. Report
+                // success so the prompt returns immediately while the process
+                // keeps running detached.
+                if nu_system::background_key::was_backgrounded() {
+                    let status = ExitStatus::Exited(0);
+                    *self = ExitStatusFuture::Finished(Ok(status));
+                    return Ok(status);
+                }
+
                 let code = match receiver.recv() {
                     #[cfg(unix)]
                     Ok(Ok(
@@ -265,17 +275,34 @@ impl PostWaitCallback {
                 this_job.remove_pid(child_pid);
             }
 
-            if let ForegroundWaitStatus::Frozen(unfreeze) = status {
-                let mut jobs = jobs.lock().expect("jobs lock is poisoned!");
+            match status {
+                ForegroundWaitStatus::Frozen(unfreeze) => {
+                    let mut jobs = jobs.lock().expect("jobs lock is poisoned!");
 
-                let job_id = jobs.add_job(Job::Frozen(FrozenJob {
-                    unfreeze,
-                    description,
-                }));
+                    let job_id = jobs.add_job(Job::Frozen(FrozenJob {
+                        unfreeze,
+                        description,
+                    }));
 
-                if is_interactive {
-                    println!("\nJob {} is frozen", job_id.get());
+                    if is_interactive {
+                        println!("\nJob {} is frozen", job_id.get());
+                    }
                 }
+
+                // Arbor: Ctrl+B moved the command to the background while it
+                // kept running, detached in its own process group. Tell the
+                // user where it went so the behaviour is not silent.
+                ForegroundWaitStatus::Backgrounded => {
+                    if is_interactive {
+                        let what = description.as_deref().unwrap_or("job");
+                        let pid = child_pid
+                            .map(|p| p.to_string())
+                            .unwrap_or_else(|| "?".to_string());
+                        println!("\n{what} moved to background (pid {pid})");
+                    }
+                }
+
+                ForegroundWaitStatus::Finished(_) => {}
             }
         })
     }
@@ -321,6 +348,13 @@ impl ChildProcess {
                     Ok(wait_status) => {
                         let next = match &wait_status {
                             ForegroundWaitStatus::Frozen(_) => ExitStatus::Exited(0),
+                            // Arbor: Ctrl+B moved the command to the background.
+                            // The pipeline that launched it is considered
+                            // finished (exit 0) while the child keeps running
+                            // in its own process group.
+                            ForegroundWaitStatus::Backgrounded => {
+                                ExitStatus::Exited(0)
+                            }
                             ForegroundWaitStatus::Finished(exit_status) => *exit_status,
                         };
 
@@ -409,6 +443,14 @@ impl ChildProcess {
 
     pub fn wait(mut self) -> Result<(), ShellError> {
         let from_io_error = IoError::factory(self.span, None);
+
+        // Arbor: if the child was moved to the background (Ctrl+B) it is still
+        // running and still holds its stdout/stderr open, so draining the pipe
+        // here would block until that process exits.
+        if nu_system::background_key::was_backgrounded() {
+            return Ok(());
+        }
+
         if let Some(stdout) = self.stdout.take() {
             let stderr = self
                 .stderr
@@ -494,6 +536,19 @@ impl ChildProcess {
     /// shares the exit status. Both pipes are read into memory to make it, so the child can't
     /// block, and they still read the same afterwards.
     pub fn copy_stdout(&mut self) -> Result<Self, ShellError> {
+        // Arbor: do not collect from a child the user backgrounded with Ctrl+B:
+        // it still owns the pipe, so reading to EOF would block the prompt.
+        if nu_system::background_key::was_backgrounded() {
+            return Ok(Self {
+                stdout: None,
+                stderr: None,
+                exit_status: self.exit_status.clone(),
+                ignore_error: self.ignore_error.clone(),
+                pid: None,
+                span: self.span,
+            });
+        }
+
         let (stdout, stderr) = collect_pipes(self.stdout.take(), self.stderr.take(), self.span)?;
         self.stdout = stdout.clone().map(replay);
         self.stderr = stderr.map(replay);
@@ -576,6 +631,11 @@ fn replay(buf: Vec<u8>) -> ChildPipe {
 
 fn collect_bytes(pipe: ChildPipe) -> io::Result<Vec<u8>> {
     let mut buf = Vec::new();
+    // Arbor: a child that was moved to the background still owns the write end
+    // of this pipe, so `read_to_end` would block until it exits.
+    if nu_system::background_key::was_backgrounded() {
+        return Ok(buf);
+    }
     match pipe {
         ChildPipe::Pipe(mut pipe) => pipe.read_to_end(&mut buf),
         ChildPipe::Tee(mut tee) => tee.read_to_end(&mut buf),
@@ -584,6 +644,10 @@ fn collect_bytes(pipe: ChildPipe) -> io::Result<Vec<u8>> {
 }
 
 fn consume_pipe(pipe: ChildPipe) -> io::Result<()> {
+    // Arbor: see `collect_bytes`.
+    if nu_system::background_key::was_backgrounded() {
+        return Ok(());
+    }
     match pipe {
         ChildPipe::Pipe(mut pipe) => io::copy(&mut pipe, &mut io::sink()),
         ChildPipe::Tee(mut tee) => io::copy(&mut tee, &mut io::sink()),

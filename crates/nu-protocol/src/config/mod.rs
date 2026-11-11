@@ -6,6 +6,7 @@ use helper::*;
 use prelude::*;
 use std::collections::HashMap;
 
+pub use arbor::ArborConfig;
 pub use ansi_coloring::UseAnsiColoring;
 pub use clip::ClipConfig;
 pub use completions::{
@@ -34,6 +35,7 @@ pub use status_line::StatusLineConfig;
 pub use table::{FooterMode, TableConfig, TableIndent, TableIndexMode, TableMode, TrimStrategy};
 
 mod ansi_coloring;
+mod arbor;
 mod clip;
 mod completions;
 mod datetime_format;
@@ -87,6 +89,11 @@ pub struct Config {
     pub explore: HashMap<String, Value>,
     /// Styles for the `tui` command family (`$env.config.tui`).
     pub tui: HashMap<String, Value>,
+    /// Arbor-specific settings (`$env.config.arbor`).
+    ///
+    /// A dedicated struct (rather than an open table) so each option is a
+    /// single source of truth with a typed default.
+    pub arbor: ArborConfig,
     pub cursor_shape: CursorShapeConfig,
     pub datetime_format: DatetimeFormatConfig,
     pub error_style: ErrorStyle,
@@ -127,6 +134,7 @@ impl Default for Config {
 
             explore: defaults::default_explore(),
             tui: defaults::default_tui(),
+            arbor: ArborConfig::default(),
 
             history: HistoryConfig::default(),
 
@@ -209,6 +217,7 @@ impl UpdateFromValue for Config {
                     self.tui.update(val, current_path, errors);
                     check_tui_border_type(&mut self.tui, current_path, errors);
                 }
+                "arbor" => self.arbor.update(val, current_path, errors),
                 "color_config" => self.color_config.update(val, current_path, errors),
                 "clip" => self.clip.update(val, current_path, errors),
                 "footer_mode" => self.footer_mode.update(val, current_path, errors),

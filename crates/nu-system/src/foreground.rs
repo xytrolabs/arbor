@@ -36,6 +36,8 @@ pub fn prepare_background_command(command: &mut Command) {
 }
 
 #[cfg(unix)]
+use crate::background_key;
+#[cfg(unix)]
 use nix::{sys::signal, sys::wait, unistd::Pid};
 
 /// A simple wrapper for [`std::process::Child`]
@@ -145,11 +147,34 @@ impl ForegroundChild {
         {
             let child_pid = Pid::from_raw(self.inner.id() as i32);
 
-            unix_wait(child_pid).inspect(|result| {
-                if let (true, ForegroundWaitStatus::Frozen(_)) = (self.interactive, result) {
+            // Fresh command: any previous Ctrl+B backgrounding is now history.
+            background_key::clear_backgrounded();
+
+            // Arbor: while the foreground child runs, also watch for the Ctrl+B
+            // "move to background" shortcut. `unix_wait_interruptible` polls with
+            // WNOHANG so the byte can be seen between polls.
+            let result = unix_wait_interruptible(child_pid);
+
+            match &result {
+                Ok(ForegroundWaitStatus::Backgrounded) => {
+                    // Arbor: tell the pipeline drainer (which checks this flag)
+                    // not to block reading a pipe the detached child still owns.
+                    background_key::mark_backgrounded();
+
+                    if self.interactive {
+                        // Give the terminal back to the shell so it can print
+                        // its next prompt; the child keeps its own process
+                        // group and continues in the background.
+                        child_pgroup::reset();
+                    }
+                }
+                Ok(ForegroundWaitStatus::Frozen(_)) if self.interactive => {
                     child_pgroup::reset();
                 }
-            })
+                _ => {}
+            }
+
+            result
         }
         #[cfg(not(unix))]
         self.as_mut().wait().map(Into::into)
@@ -190,9 +215,92 @@ fn unix_wait(child_pid: Pid) -> std::io::Result<ForegroundWaitStatus> {
     }
 }
 
+/// Like [`unix_wait`], but also watches the terminal for the Ctrl+B
+/// "move to background" shortcut.
+///
+/// Uses a non-blocking `waitpid` so the shortcut byte can be observed between
+/// polls. When the shortcut is seen the child is left running and
+/// [`ForegroundWaitStatus::Backgrounded`] is returned.
+#[cfg(unix)]
+fn unix_wait_interruptible(child_pid: Pid) -> std::io::Result<ForegroundWaitStatus> {
+    use ForegroundWaitStatus::*;
+
+    if !background_key::supported() {
+        return unix_wait(child_pid);
+    }
+
+    let start = std::time::Instant::now();
+
+    loop {
+        let status = wait::waitpid(
+            child_pid,
+            Some(wait::WaitPidFlag::WNOHANG | wait::WaitPidFlag::WUNTRACED),
+        );
+        match status {
+            Ok(wait::WaitStatus::Exited(_, status)) => {
+                background_key::restore_susp();
+                return Ok(Finished(ExitStatus::Exited(status)));
+            }
+            Ok(wait::WaitStatus::Signaled(_, signal, core_dumped)) => {
+                background_key::restore_susp();
+                return Ok(Finished(ExitStatus::Signaled {
+                    signal: signal as i32,
+                    core_dumped,
+                }));
+            }
+            // Stopped: Ctrl+Z, or Ctrl+B delivered as VSUSP.
+            Ok(wait::WaitStatus::Stopped(_, _)) => {
+                // Was the stop caused by our shortcut? Two ways to know:
+                //  * we read the byte ourselves (child ignored VSUSP), or
+                //  * our VSUSP remap is installed and the tty delivered SIGTSTP
+                //    for it. In that case the stop IS the shortcut.
+                let via_shortcut = background_key::take_shortcut_press()
+                    || background_key::remap_active();
+
+                background_key::restore_susp();
+
+                if via_shortcut {
+                    // Continue it so it keeps running in the background rather
+                    // than sitting frozen in the job table.
+                    let _ = signal::killpg(child_pid, signal::SIGCONT);
+                    background_key::mark_backgrounded();
+                    return Ok(Backgrounded);
+                }
+                return Ok(Frozen(UnfreezeHandle { child_pid }));
+            }
+            Ok(wait::WaitStatus::StillAlive) => {}
+            Err(nix::errno::Errno::EINTR) => {}
+            Err(e) => return Err(e.into()),
+            Ok(_) => {}
+        }
+
+        // Install the VSUSP remap once the command has run long enough. This
+        // is what makes Ctrl+B work even though the foreground child owns the
+        // terminal: the tty then delivers SIGTSTP to the child's process group
+        // when the key is pressed. Deferred so fast commands never trigger a
+        // termios change that could race with their output.
+        background_key::maybe_remap(start.elapsed());
+
+        // Poll the terminal for the shortcut, then wait a moment.
+        if background_key::poll_shortcut() {
+            // The child did not stop (it may have reset VSUSP), so continue it
+            // explicitly if it happens to have been stopped anyway.
+            let _ = signal::killpg(child_pid, signal::SIGCONT);
+            background_key::restore_susp();
+            background_key::mark_backgrounded();
+            return Ok(Backgrounded);
+        }
+
+        std::thread::sleep(background_key::poll_interval());
+    }
+}
+
 pub enum ForegroundWaitStatus {
     Finished(ExitStatus),
     Frozen(UnfreezeHandle),
+    /// Arbor: the user pressed the move-to-background shortcut (Ctrl+B). The
+    /// child is still running in its own process group.
+    Backgrounded,
 }
 
 impl From<std::process::ExitStatus> for ForegroundWaitStatus {

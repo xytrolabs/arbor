@@ -141,6 +141,11 @@ fn unfreeze_job(
 
                 Ok(ForegroundWaitStatus::Finished(status)) => check_ok(status, false, span),
 
+                // Arbor: the command was moved to the background with the
+                // Ctrl+B shortcut, so from the pipeline's point of view it
+                // completed successfully while it keeps running detached.
+                Ok(ForegroundWaitStatus::Backgrounded) => Ok(()),
+
                 Err(err) => Err(ShellError::Io(IoError::new_internal(
                     err,
                     "Failed to unfreeze foreground process",

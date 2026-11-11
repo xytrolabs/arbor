@@ -11,6 +11,9 @@ mod exit_status;
 mod foreground;
 mod util;
 
+#[cfg(target_family = "unix")]
+pub mod background_key;
+
 #[cfg(target_os = "freebsd")]
 mod freebsd;
 #[cfg(any(target_os = "android", target_os = "linux"))]

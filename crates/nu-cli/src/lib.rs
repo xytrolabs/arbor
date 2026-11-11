@@ -1,6 +1,8 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(test, allow(clippy::unwrap_used))]
 
+mod bashblock;
+pub mod indent;
 mod commands;
 mod completions;
 mod config_files;

@@ -304,6 +304,12 @@ fn main() -> Result<()> {
     engine_state.is_login = parsed_nu_cli_args.login_shell.is_some();
     engine_state.history_enabled = parsed_nu_cli_args.no_history.is_none();
 
+    // Arbor: install the Ctrl+B move-to-background shortcut from config.
+    // `nu-system` owns the process-global terminal state, so this is a single
+    // startup call; an invalid value falls back to Ctrl+B inside.
+    #[cfg(unix)]
+    nu_system::background_key::set_shortcut(&engine_state.get_config().arbor.bg_shortcut);
+
     let use_color = engine_state
         .get_config()
         .use_ansi_coloring

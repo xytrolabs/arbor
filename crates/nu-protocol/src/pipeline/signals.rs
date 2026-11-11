@@ -73,6 +73,7 @@ impl Signals {
             .is_some_and(|b| b.load(Ordering::Relaxed))
     }
 
+    #[allow(dead_code)]
     pub(crate) fn is_empty(&self) -> bool {
         self.signals.is_none()
     }

@@ -21,16 +21,14 @@ let banner_msg = if $short {
     let dt = (datetime-diff (date now) 2019-05-10T09:59:12-07:00)
     let ver = (version)
 
-    let welcome = $"(ansi $highlight1)     __  ,(ansi reset)
-(ansi $highlight1) .--\(\)°'.' (ansi reset)(ansi $foreground)Welcome to (ansi $highlight1)Nushell(ansi reset)(ansi $foreground),(ansi reset)
-(ansi $highlight1)'|, . ,'   (ansi reset)(ansi $foreground)based on the (ansi $highlight1)nu(ansi reset)(ansi $foreground) language,(ansi reset)
-(ansi $highlight1) !_-\(_\\    (ansi reset)(ansi $foreground)where all data is structured!
+    let welcome = $"(ansi $highlight1)       /\\ (ansi reset)
+(ansi $highlight1)      /  \\  (ansi reset)(ansi $foreground)Welcome to (ansi $highlight1)Arbor(ansi reset)(ansi $foreground),(ansi reset)
+(ansi $highlight1)     / /\\ \\ (ansi reset)(ansi $foreground)a fork of Nushell,(ansi reset)
+(ansi $highlight1)    /_/  \\_\\\ (ansi reset)(ansi $foreground)where all data is structured!
 
 (ansi $foreground)Version: (ansi $highlight1)($ver.version) \(($ver.build_target)\)(ansi reset)
-(ansi $foreground)Please join our (ansi $highlight2)Discord(ansi reset)(ansi $foreground) community at (ansi $highlight2)https://discord.gg/NtAbbGn(ansi reset)
-(ansi $foreground)Our (ansi $highlight1)(ansi attr_bold)GitHub(ansi reset)(ansi $foreground) repository is at (ansi $highlight1)(ansi attr_bold)https://github.com/nushell/nushell(ansi reset)
-(ansi $foreground)Our (ansi $highlight2)Documentation(ansi reset)(ansi $foreground) is located at (ansi $highlight2)https://nushell.sh(ansi reset)
-(ansi $foreground)And the (ansi $highlight1)Latest Nushell News(ansi reset)(ansi $foreground) at (ansi $highlight1)https://nushell.sh/blog/(ansi reset)
+(ansi $foreground)Arbor is a fork of (ansi $highlight2)Nushell(ansi reset)(ansi $foreground): (ansi $highlight2)https://github.com/nushell/nushell(ansi reset)
+(ansi $foreground)Upstream docs apply: (ansi $highlight2)https://nushell.sh(ansi reset)
 (ansi $foreground)Learn how to remove this at: (ansi $highlight2)https://nushell.sh/book/configuration.html#remove-welcome-message(ansi reset)
 
 (ansi $foreground)It's been this long since (ansi $highlight1)Nushell(ansi reset)(ansi $foreground)'s first commit:(ansi reset)

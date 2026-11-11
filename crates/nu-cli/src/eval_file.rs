@@ -273,7 +273,8 @@ mod tests {
 
             test()
                 .cwd(dirs.test())
-                .run(format!("nu test.nu {args} | from json"))
+                // Arbor: the binary is named `arbor`, not `nu`.
+                .run(format!("arbor test.nu {args} | from json"))
                 .expect_value_eq(expected)
         })
     }

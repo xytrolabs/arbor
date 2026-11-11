@@ -1,0 +1,94 @@
+#! arbor.ind — Arbor shell helpers for Indent scripts
+#!
+#! Ported from waash.idnt and updated for Indent 2.4.x syntax.
+#! Arbor auto-imports these functions into `.ind` / `.arbor` scripts, so a
+#! script can mix plain shell commands with Indent logic:
+#!
+#!   fun main
+#!     var files = sh_capture "ls src"
+#!     header "building"
+#!     cargo build --release
+#!     success "done"
+#!
+#! Remember Indent's by-value semantics: functions receive copies, so any
+#! container you mutate must be returned and reassigned by the caller.
+
+#! Run a command and return its exit code (0 = success)
+fun sh command
+  give os_system command
+
+#! Run a command and capture its combined stdout/stderr as a string
+fun sh_capture command
+  var tmp = "/tmp/arbor_cap_"
+  var stamp = string (time_perf_counter)
+  var path = tmp + stamp + ".txt"
+  #! NOTE: build the whole command in a variable first — Indent cannot parse
+  #! a string `+` concatenation directly inside a function-call argument.
+  var full_cmd = command + " > " + path + " 2>&1"
+  var code = os_system full_cmd
+  var output = ""
+  if os_exists path
+    output = file_read_text path
+    os_remove path
+  give output
+
+#! Get an environment variable with a default
+fun env var_name fallback
+  var val = os_getenv var_name
+  if val == ""
+    give fallback
+  give val
+
+#! Set an environment variable
+fun set_env name value
+  os_setenv name value
+  give 0
+
+#! Check if a command exists in PATH
+fun has_command name
+  #! NOTE: precompute — Indent cannot parse `+` concatenation as a bare call argument.
+  var full_cmd = "which " + name + " > /dev/null 2>&1"
+  var result = os_system full_cmd
+  give result == 0
+
+#! Check if a path exists
+fun exists path
+  give os_exists path
+
+#! Read an entire file
+fun read_file path
+  give file_read_text path
+
+#! Write a file
+fun write_file path content
+  file_write_text path content
+  give 0
+
+#! Append to a file
+fun append_file path content
+  file_append_text path content
+  give 0
+
+#! Print a section header
+fun header text
+  say ""
+  say "=== " + text + " ==="
+  say ""
+
+#! Print a success line
+fun success text
+  say "[ok] " + text
+
+#! Print an error line
+fun error text
+  say "[error] " + text
+
+#! Print an informational line
+fun info text
+  say "[info] " + text
+
+#! Exit the script with an error unless `code` is 0
+fun require_ok code message
+  if code != 0
+    error message
+    process_exit code

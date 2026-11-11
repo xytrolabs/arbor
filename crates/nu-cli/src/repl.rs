@@ -41,9 +41,9 @@ use reedline::Helix;
 #[cfg(feature = "sqlite")]
 use reedline::SqliteBackedHistory;
 use reedline::{
-    CursorConfig, CwdAwareHinter, DefaultCompleter, EditCommand, Emacs, FileBackedHistory,
-    HistorySessionId, MouseClickMode, Osc133ClickEventsMarkers, Osc633Markers, Reedline,
-    SemanticPromptMarkers, Vi,
+    CursorConfig, CwdAwareHinter, DefaultCompleter, DefaultPrompt, EditCommand, Emacs,
+    FileBackedHistory, HistorySessionId, MouseClickMode, Osc133ClickEventsMarkers, Osc633Markers,
+    Reedline, SemanticPromptMarkers, Signal, Vi,
 };
 use std::ffi::OsStr;
 use std::sync::atomic::Ordering;
@@ -505,6 +505,52 @@ fn run_command(ctx: RunContext) -> Reedline {
 
     // Actual command execution logic starts from here
     let cmd_execution_start_time = Instant::now();
+
+    // Arbor: hand bash control-flow blocks to `bash` instead of the Nu parser,
+    // so `if ... fi`, `for ... done`, `case ... esac` and `name() { ... }`
+    // keep working the way they do in bash/zsh/fish.
+    if engine_state.get_config().arbor.bash_blocks
+        && crate::bashblock::starts_bash_block(&command)
+    {
+        let cont_prompt = DefaultPrompt::new(
+            reedline::DefaultPromptSegment::Basic(
+                crate::bashblock::CONTINUATION_PROMPT.to_string(),
+            ),
+            reedline::DefaultPromptSegment::Empty,
+        );
+        let exit_code = crate::bashblock::run_bash_line(&command, |_prompt_text| {
+            match line_editor.read_line(&cont_prompt) {
+                Ok(Signal::Success(line)) => Some(line),
+                // Ctrl+C / Ctrl+D abort the block.
+                _ => None,
+            }
+        });
+
+        // Keep the Nu exit status in sync with what bash reported.
+        stack.add_env_var(
+            "LAST_EXIT_CODE".into(),
+            Value::int(exit_code as i64, Span::unknown()),
+        );
+
+        run_finaliziation_ansi_sequence(
+            stack,
+            engine_state,
+            use_color,
+            shell_integration.osc633,
+            shell_integration.osc133,
+        );
+
+        // Keep `$CMD_DURATION_MS` meaningful for the delegated block.
+        stack.add_env_var(
+            "CMD_DURATION_MS".into(),
+            Value::string(
+                format!("{}", cmd_execution_start_time.elapsed().as_millis()),
+                Span::unknown(),
+            ),
+        );
+
+        return line_editor;
+    }
 
     // Only user-typed commands refresh `$ans` metadata (not empty Enter / auto-cd).
     let mut snapshot_ans = false;

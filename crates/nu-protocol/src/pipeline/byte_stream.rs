@@ -740,6 +740,14 @@ impl ByteStream {
                 // and those commands have proper simultaneous handling of stdout and stderr.
                 debug_assert!(child.stderr.is_none(), "stderr should not exist");
 
+                // Arbor: if the user moved this command to the background with
+                // Ctrl+B, it is still running and still owns the pipe, so
+                // draining it would block until that process exits. Hand the
+                // prompt back immediately instead.
+                if nu_system::background_key::was_backgrounded() {
+                    child.wait()?;
+                    return Ok(());
+                }
                 if let Some(stdout) = child.stdout.take() {
                     match stdout {
                         ChildPipe::Pipe(pipe) => {
@@ -1233,34 +1241,17 @@ pub fn copy_with_signals(
     signals: &Signals,
 ) -> Result<u64, ShellError> {
     let from_io_error = IoError::factory(span, None);
-    if signals.is_empty() {
-        match io::copy(&mut reader, &mut writer) {
-            Ok(n) => {
-                writer.flush().map_err(&from_io_error)?;
-                Ok(n)
-            }
-            Err(err) => {
-                let _ = writer.flush();
-                match ShellErrorBridge::try_from(err) {
-                    Ok(ShellErrorBridge(shell_error)) => Err(shell_error),
-                    Err(err) => Err(from_io_error(err).into()),
-                }
-            }
+    // Arbor: always use `generic_copy` so the Ctrl+B backgrounding check is
+    // honoured even when no signals are registered. Plain `io::copy` would
+    // block on a pipe that the detached child still owns.
+    match generic_copy(&mut reader, &mut writer, span, signals) {
+        Ok(n) => {
+            writer.flush().map_err(&from_io_error)?;
+            Ok(n)
         }
-    } else {
-        // #[cfg(any(target_os = "linux", target_os = "android"))]
-        // {
-        //     return crate::sys::kernel_copy::copy_spec(reader, writer);
-        // }
-        match generic_copy(&mut reader, &mut writer, span, signals) {
-            Ok(len) => {
-                writer.flush().map_err(&from_io_error)?;
-                Ok(len)
-            }
-            Err(err) => {
-                let _ = writer.flush();
-                Err(err)
-            }
+        Err(e) => {
+            let _ = writer.flush();
+            Err(e)
         }
     }
 }
@@ -1277,6 +1268,15 @@ fn generic_copy(
     let mut len = 0;
     loop {
         signals.check(&span)?;
+
+        // Arbor: stop draining as soon as the command is moved to the
+        // background, so the prompt returns without waiting for a process the
+        // user deliberately detached. The child keeps its own pipe writer and
+        // continues writing to the terminal.
+        if nu_system::background_key::was_backgrounded() {
+            break;
+        }
+
         let n = match reader.read(buf) {
             Ok(0) => break,
             Ok(n) => n,
