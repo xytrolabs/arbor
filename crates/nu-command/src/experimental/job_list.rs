@@ -42,6 +42,7 @@ impl Command for JobList {
                     "type" => match job {
                         Job::Thread(_) => Value::string("thread", head),
                         Job::Frozen(_) => Value::string("frozen", head),
+                        Job::Backgrounded(_) => Value::string("backgrounded", head),
                     },
                     "pids" => match job {
                         Job::Thread(job) => Value::list(
@@ -54,6 +55,10 @@ impl Command for JobList {
 
                         Job::Frozen(FrozenJob { unfreeze, .. }) => {
                             Value::list(vec![ Value::int(unfreeze.pid() as i64, head) ], head)
+                        }
+
+                        Job::Backgrounded(job) => {
+                            Value::list(vec![ Value::int(job.pid as i64, head) ], head)
                         }
                     },
                     "auto_kill" => Value::bool(job.is_auto_kill(), head),

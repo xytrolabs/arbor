@@ -129,15 +129,40 @@ How it works:
 The remap is **deferred by 300 ms**, so a fast command never touches terminal
 settings — this avoids a race that used to eat output.
 
+#### What can be backgrounded
+
+| Command | `Ctrl+B` | Notes |
+|---|---|---|
+| External commands (`^sleep`, `cargo build`, …) | Yes | The usual case; a child process exists to detach. |
+| `sleep` (builtin) | Yes | Interrupts the wait immediately. |
+| Other builtins (`ls`, `sort`, …) | Not yet | They run inside the shell, so there is no child to detach. |
+
+Builtins run *inside* the shell process rather than as a child, so there is
+nothing to move to the background. `sleep` is special-cased because it is the
+one builtin you would realistically want to interrupt. For anything else, run
+the external version with `^`:
+
+```nushell
+^sleep 300    # external: Ctrl+B works
+sleep 300sec  # builtin: also works (special-cased)
+```
+
+> `sleep` requires units. `sleep 4000` is a parse error; write `sleep 4000sec`.
+
 Change the key:
 
 ```nushell
 $env.config.arbor.bg_shortcut = "Ctrl+G"
 ```
 
-> `Ctrl+B` replaces the older `Ctrl+Z` then `job unfreeze` flow. Because the
-> terminal's suspend character is remapped, `Ctrl+Z` no longer suspends while a
-> foreground command runs.
+> `Ctrl+B` replaces the older `Ctrl+Z` then `job unfreeze` flow for *running*
+> commands. Arbor remaps the terminal's suspend character only while a command
+> is actually running, and restores it when the command finishes, which is why
+> the remap is deferred by 300 ms. Pressing `Ctrl+Z` at the prompt itself is
+> unaffected.
+
+> Note: while a command is running and `Ctrl+B` is available, `Ctrl+Z` is
+> remapped, so use `Ctrl+B` if you want the job to keep running.
 
 ## Bash control-flow blocks
 

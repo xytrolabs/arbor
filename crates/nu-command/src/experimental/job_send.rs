@@ -87,6 +87,14 @@ This command never blocks.
                         }
                         .into());
                     }
+                    // An already-detached process has no stdin channel to send to.
+                    nu_protocol::engine::Job::Backgrounded(_) => {
+                        return Err(JobError::CannotUnfreeze {
+                            span: id_arg.span,
+                            id,
+                        }
+                        .into());
+                    }
                 }
             } else {
                 return Err(JobError::NotFound {

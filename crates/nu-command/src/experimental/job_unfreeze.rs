@@ -55,6 +55,10 @@ impl Command for JobUnfreeze {
             Some(Job::Frozen(FrozenJob { .. })) => jobs
                 .remove_job(id)
                 .expect("job was supposed to be in job list"),
+            // Already running in the background; there is nothing to unfreeze.
+            Some(Job::Backgrounded(_)) => {
+                return Err(JobError::CannotUnfreeze { span: head, id }.into());
+            }
         };
 
         drop(jobs);
@@ -93,6 +97,8 @@ fn unfreeze_job(
 ) -> Result<(), ShellError> {
     match job {
         Job::Thread(ThreadJob { .. }) => Err(JobError::CannotUnfreeze { span, id: old_id }.into()),
+        // Already running in the background after Ctrl+B: nothing to unfreeze.
+        Job::Backgrounded(_) => Err(JobError::CannotUnfreeze { span, id: old_id }.into()),
         Job::Frozen(FrozenJob {
             unfreeze: handle,
             description,

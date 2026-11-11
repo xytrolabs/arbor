@@ -10,40 +10,82 @@ $env.PROMPT_COMMAND = {||
         $relative_pwd => ([~ $relative_pwd] | path join)
     }
 
-    let colors: record<path: string, separator: string, glyph: string> = match [(config use-colors), (is-admin)] {
-        [false, _] => {path: '', separator: '', glyph: ''}
-        [true, true] => {path: (ansi red_bold), separator: (ansi light_red_bold), glyph: (ansi red)}
-        [true, false] => {path: (ansi green_bold), separator: (ansi light_green_bold), glyph: (ansi green)}
+    let use_colors = (config use-colors)
+    let is_admin = (is-admin)
+
+    # Arbor identity: a tree glyph plus a two-line user@host + path prompt.
+    # The glyph is a plain BMP character, so no special font is required, and
+    # it is omitted entirely when colours are off.
+    let glyph_segment = if $use_colors {
+        if $is_admin { $"(ansi red)\u{1F332}(ansi reset) " } else { $"(ansi green)\u{1F332}(ansi reset) " }
+    } else { '' }
+
+    let user_host = (do -i {
+        let u = ($env.USER? | default (whoami))
+        let h = (sys host | get hostname | str trim)
+        if $use_colors {
+            let c = if $is_admin { (ansi red_bold) } else { (ansi green_bold) }
+            $"($c)($u)(ansi reset)(ansi dimmed)@(ansi reset)($c)($h)(ansi reset)"
+        } else {
+            $"($u)@($h)"
+        }
+    } | default '')
+
+    let dir_segment = if $use_colors {
+        let c = if $is_admin { (ansi red_bold) } else { (ansi green_bold) }
+        let s = if $is_admin { (ansi light_red_bold) } else { (ansi light_green_bold) }
+        $"($c)($dir)(ansi reset)" | str replace --all (char path_sep) $"($s)(char path_sep)($c)"
+    } else {
+        $dir
     }
-    let path_segment = $"($colors.path)($dir)(ansi reset)"
 
-    # Arbor: a tree glyph marks the prompt so the shell is identifiable at a
-    # glance, while keeping the familiar Nushell path layout. A plain
-    # double-quoted unicode escape is used so no special font is required.
-    let glyph_segment = if (config use-colors) { $"($colors.glyph)\u{1F332}(ansi reset) " } else { '' }
+    # git branch, dirty marker, and ahead/behind counts. Uses `complete` so
+    # git's stderr never leaks to the terminal (a repo without an upstream
+    # otherwise prints "fatal: no upstream configured").
+    let git_segment = (do -i {
+        let branch = (git rev-parse --abbrev-ref HEAD | complete | get stdout | str trim)
+        if ($branch | is-empty) or ($branch == 'HEAD') {
+            ''
+        } else {
+            let dirty = (if (git status --porcelain | complete | get stdout | str trim | is-empty) { '' } else { '*' })
+            let counts = (do -i {
+                let r = (git rev-list --count '@{u}..HEAD' | complete)
+                let ahead = (if $r.exit_code == 0 { $r.stdout | str trim | into int } else { 0 })
+                let b = (git rev-list --count 'HEAD..@{u}' | complete)
+                let behind = (if $b.exit_code == 0 { $b.stdout | str trim | into int } else { 0 })
+                if $ahead > 0 and $behind > 0 { $" +($ahead) -($behind)" } else if $ahead > 0 { $" +($ahead)" } else if $behind > 0 { $" -($behind)" } else { '' }
+            } | default '')
+            if $use_colors {
+                let c = if ($dirty | is-empty) { (ansi purple) } else { (ansi yellow_bold) }
+                $" ($c)\(($branch)($dirty)($counts)\)(ansi reset)"
+            } else {
+                $" \(($branch)($dirty)($counts)\)"
+            }
+        }
+    } | default '')
 
-    ($glyph_segment + ($path_segment | str replace --all (char path_sep) $"($colors.separator)(char path_sep)($colors.path)"))
+    $"($glyph_segment)($user_host)  ($dir_segment)($git_segment)(char nl)($glyph_segment)"
 }
 
 $env.PROMPT_COMMAND_RIGHT = {||
-    # create a right prompt in magenta with green separators and am/pm underlined
-    let colors: record<date: string, separator: string, ampm: string, fail: string> = if (config use-colors) {
-        {date: (ansi magenta), separator: (ansi green), ampm: (ansi magenta_underline), fail: (ansi red_bold)}
-    } else {
-        {date: '', separator: '', ampm: '', fail: ''}
-    }
-    let time_segment = ([
-        (ansi reset)
-        $colors.date
-        (date now | format date '%x %X') # try to respect user's locale
-    ] | str join | str replace --regex --all "([/:])" $"($colors.separator)${1}($colors.date)" |
-        str replace --regex --all "([AP]M)" $"($colors.ampm)${1}")
+    if not (config use-colors) { return '' }
 
-    let last_exit_code = if ($env.LAST_EXIT_CODE != 0) {([
-        $colors.fail
-        $env.LAST_EXIT_CODE
-    ] | str join)
-    } else { "" }
+    # Right-aligned status line: load average, background jobs, wall clock.
+    let load_segment = (do -i {
+        let l = (sys cpu | get 0.load_average | split row ',' | first | into float | math round --precision 1)
+        $"(ansi yellow)\u{2699} ($l)(ansi reset)"
+    } | default '')
 
-    ([$last_exit_code, (char space), $time_segment] | str join)
+    let jobs_segment = (do -i {
+        let n = (job list | length)
+        if $n > 0 { $" (ansi yellow)\u{23F3} ($n)(ansi reset)" } else { '' }
+    } | default '')
+
+    let time_segment = (do -i {
+        $"(ansi magenta)(date now | format date '%H:%M:%S')(ansi reset)"
+    } | default '')
+
+    [$load_segment $jobs_segment $time_segment]
+    | where {|s| $s | is-not-empty }
+    | str join " \u{2502} "
 }

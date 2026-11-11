@@ -254,8 +254,9 @@ fn unix_wait_interruptible(child_pid: Pid) -> std::io::Result<ForegroundWaitStat
                 //  * we read the byte ourselves (child ignored VSUSP), or
                 //  * our VSUSP remap is installed and the tty delivered SIGTSTP
                 //    for it. In that case the stop IS the shortcut.
-                let via_shortcut = background_key::take_shortcut_press()
-                    || background_key::remap_active();
+                let pressed = background_key::take_shortcut_press();
+                let remapped = background_key::remap_active();
+                let via_shortcut = pressed || remapped;
 
                 background_key::restore_susp();
 

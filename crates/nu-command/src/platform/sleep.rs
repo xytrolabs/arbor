@@ -2,6 +2,7 @@ use nu_engine::command_prelude::*;
 
 use std::{thread, time::Duration};
 
+use nu_system::background_key::{ShortcutReader, mark_backgrounded};
 use nu_utils::time::Instant;
 
 const CTRL_C_CHECK_INTERVAL: Duration = Duration::from_millis(100);
@@ -52,6 +53,13 @@ impl Command for Sleep {
             duration_from_i64(duration) + rest.into_iter().map(duration_from_i64).sum::<Duration>();
         let deadline = Instant::now() + total_dur;
 
+        // Arbor: Ctrl+B moves a running command to the background. A builtin
+        // runs inside the shell and never spawns a child, so there is nothing
+        // for the foreground waiter to detach. Take the terminal out of
+        // canonical mode for the duration so the keypress is actually visible
+        // (restored automatically on drop, including on Ctrl+C).
+        let shortcut = ShortcutReader::new();
+
         loop {
             // sleep for 100ms, or until the deadline
             let time_until_deadline = deadline.saturating_duration_since(Instant::now());
@@ -60,6 +68,13 @@ impl Command for Sleep {
             }
             thread::sleep(CTRL_C_CHECK_INTERVAL.min(time_until_deadline));
             engine_state.signals().check(&call.head)?;
+
+            if shortcut.poll() {
+                mark_backgrounded();
+                // Drop happens here, restoring the terminal before returning.
+                drop(shortcut);
+                return Ok(Value::nothing(call.head).into_pipeline_data());
+            }
         }
 
         Ok(Value::nothing(call.head).into_pipeline_data())

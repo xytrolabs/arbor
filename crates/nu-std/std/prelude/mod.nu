@@ -22,6 +22,24 @@ let banner_msg = if $short {
     let dt_fork = (datetime-diff (date now) 2026-11-10T00:00:00-08:00)
     let ver = (version)
 
+    # ── System info line (Waash-style "liveliness") ──────────────────────
+    # Every lookup is wrapped in `do -i` so an unsupported platform, a
+    # container without `sys` data, or a missing command degrades to a dash
+    # instead of breaking the banner.
+    let sys_host = (do -i { sys host } | default {})
+    let sys_mem = (do -i { sys mem } | default {})
+
+    let host_name = (do -i { $sys_host.hostname | str trim } | default "unknown")
+    let os_name = (do -i { $sys_host.long_os_version } | default (do -i { $sys_host.name } | default "unknown"))
+    let kernel = (do -i { $sys_host.kernel_version } | default "-")
+    let uptime = (do -i { $sys_host.uptime } | default "-")
+    let mem_pct = (do -i {
+        let used = ($sys_mem.used | into int)
+        let total = ($sys_mem.total | into int)
+        if $total > 0 { ($used / $total * 100 | math round | into int) } else { -1 }
+    } | default (-1))
+    let mem_seg = (if $mem_pct >= 0 { $"mem ($mem_pct)%" } else { "mem -" })
+
     let welcome = $"(ansi $highlight1)            .            (ansi reset)
 (ansi $highlight1)           / \\           (ansi reset)(ansi $foreground)Welcome to arbor,(ansi reset)
 (ansi $highlight1)          /   \\          (ansi reset)(ansi $foreground)structured data, structured thinking(ansi reset)
@@ -35,6 +53,8 @@ let banner_msg = if $short {
 (ansi $highlight1)          | |            (ansi reset)
 (ansi $highlight1)          | |            (ansi reset)
 (ansi $highlight1)    ______|_|______      (ansi reset)
+
+(ansi $foreground)(do -i { $"($host_name) (ansi $highlight2)\u{00b7}(ansi reset)(ansi $foreground) ($os_name) (ansi $highlight2)\u{00b7}(ansi reset)(ansi $foreground) kernel ($kernel) (ansi $highlight2)\u{00b7}(ansi reset)(ansi $foreground) up ($uptime) (ansi $highlight2)\u{00b7}(ansi reset)(ansi $foreground) ($mem_seg)" } | default '')(ansi reset)
 
 (ansi $foreground)Version: (ansi $highlight1)($ver.version) \(($ver.build_target)\)(ansi reset)
 (ansi $foreground)Docs: (ansi $highlight2)https://xytro.site/arbor/(ansi reset)(ansi $foreground) | Upstream: (ansi $highlight2)https://nushell.sh(ansi reset)

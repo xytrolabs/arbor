@@ -145,6 +145,10 @@ impl Jobs {
 pub enum Job {
     Thread(ThreadJob),
     Frozen(FrozenJob),
+    /// Arbor: a foreground command detached with the Ctrl+B shortcut. Unlike a
+    /// `Frozen` job it is still running; it is tracked so `job list` shows it
+    /// and `job kill` can stop it.
+    Backgrounded(BackgroundedJob),
 }
 
 // A thread job represents a job that is currently executing as a background thread in nushell.
@@ -250,6 +254,7 @@ impl Job {
         match self {
             Job::Thread(thread_job) => thread_job.kill(),
             Job::Frozen(frozen_job) => frozen_job.kill(),
+            Job::Backgrounded(job) => job.kill(),
         }
     }
 
@@ -257,6 +262,7 @@ impl Job {
         match self {
             Job::Thread(thread_job) => thread_job.description.as_ref(),
             Job::Frozen(frozen_job) => frozen_job.description.as_ref(),
+            Job::Backgrounded(job) => job.description.as_ref(),
         }
     }
 
@@ -264,6 +270,7 @@ impl Job {
         match self {
             Job::Thread(job) => job.auto_kill,
             Job::Frozen(_) => false,
+            Job::Backgrounded(_) => false,
         }
     }
 
@@ -271,6 +278,7 @@ impl Job {
         match self {
             Job::Thread(thread_job) => thread_job.description = description,
             Job::Frozen(frozen_job) => frozen_job.description = description,
+            Job::Backgrounded(job) => job.description = description,
         }
     }
 }
@@ -289,6 +297,38 @@ impl FrozenJob {
         }
 
         // it doesn't happen outside unix.
+        #[cfg(not(unix))]
+        {
+            Ok(())
+        }
+    }
+}
+
+/// A command the user detached with the Ctrl+B shortcut.
+///
+/// The process is still running in its own process group, so unlike a
+/// [`FrozenJob`] it does not need unfreezing — only killing if the user asks.
+#[derive(Debug)]
+pub struct BackgroundedJob {
+    pub pid: u32,
+    pub description: Option<String>,
+}
+
+impl BackgroundedJob {
+    pub fn kill(&self) -> shell_error::io::Result<()> {
+        #[cfg(unix)]
+        {
+            use nix::sys::signal::{Signal, killpg};
+            use nix::unistd::Pid;
+            // Signal the whole group so shell wrappers and their children go
+            // down together; fall back to the single pid if it is not a
+            // group leader.
+            match killpg(Pid::from_raw(self.pid as i32), Signal::SIGTERM) {
+                Ok(()) => Ok(()),
+                Err(_) => Ok(kill_by_pid(self.pid as i64)?),
+            }
+        }
+
         #[cfg(not(unix))]
         {
             Ok(())

@@ -1,7 +1,7 @@
 use crate::{
     ShellError, Span,
     byte_stream::convert_file,
-    engine::{EngineState, FrozenJob, Job},
+    engine::{BackgroundedJob, EngineState, FrozenJob, Job},
     shell_error::{generic::GenericError, io::IoError},
 };
 use nu_system::{ExitStatus, ForegroundChild, ForegroundWaitStatus};
@@ -290,15 +290,27 @@ impl PostWaitCallback {
                 }
 
                 // Arbor: Ctrl+B moved the command to the background while it
-                // kept running, detached in its own process group. Tell the
-                // user where it went so the behaviour is not silent.
+                // kept running, detached in its own process group. Record it in
+                // the job table (so `job list` / `job kill` see it) and tell the
+                // user where it went.
                 ForegroundWaitStatus::Backgrounded => {
+                    if let Some(pid) = child_pid {
+                        let mut jobs = jobs.lock().expect("jobs lock is poisoned!");
+                        jobs.add_job(Job::Backgrounded(BackgroundedJob {
+                            pid,
+                            description: description.clone(),
+                        }));
+                    }
+
                     if is_interactive {
-                        let what = description.as_deref().unwrap_or("job");
-                        let pid = child_pid
-                            .map(|p| p.to_string())
-                            .unwrap_or_else(|| "?".to_string());
-                        println!("\n{what} moved to background (pid {pid})");
+                        match (description.as_deref(), child_pid) {
+                            (Some(what), Some(p)) => {
+                                println!("\n{what} moved to background (pid {p})")
+                            }
+                            (Some(what), None) => println!("\n{what} moved to background"),
+                            (None, Some(p)) => println!("\nMoved to background (pid {p})"),
+                            (None, None) => println!("\nMoved to background"),
+                        }
                     }
                 }
 

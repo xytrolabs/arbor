@@ -48,6 +48,107 @@ static ORIG_SUSP: Mutex<Option<u8>> = Mutex::new(None);
 /// Whether the VSUSP remap is currently installed.
 static REMAP_ACTIVE: AtomicBool = AtomicBool::new(false);
 
+/// Reads the shortcut while a **builtin** runs.
+///
+/// Builtins execute inside the shell process and never spawn a child, so
+/// neither the VSUSP remap nor the foreground wait loop applies to them: the
+/// terminal is left in canonical mode, where the shortcut byte sits in the
+/// line buffer until Enter and is therefore invisible to `poll`.
+///
+/// This guard briefly switches the tty to non-canonical, no-echo mode
+/// (`VMIN = 0`, `VTIME = 0`) so a single keypress can be seen immediately, and
+/// restores the original settings on drop — including on early return or
+/// panic, so a failed command can never leave the terminal echo-less.
+///
+/// `ISIG` is deliberately left enabled so `Ctrl+C` still raises `SIGINT`
+/// while the reader is active.
+pub struct ShortcutReader {
+    original: Option<nix::sys::termios::Termios>,
+}
+
+impl ShortcutReader {
+    /// Enter shortcut-reading mode if stdin is a terminal.
+    ///
+    /// Returns an inert reader (that does nothing and restores nothing) when
+    /// stdin is not a terminal, e.g. in a pipeline or a non-interactive run.
+    pub fn new() -> Self {
+        use nix::sys::termios::{
+            LocalFlags, SetArg, SpecialCharacterIndices, tcgetattr, tcsetattr,
+        };
+
+        if !std::io::stdin().is_terminal() {
+            return Self { original: None };
+        }
+
+        let Ok(original) = tcgetattr(std::io::stdin()) else {
+            return Self { original: None };
+        };
+
+        let mut raw = original.clone();
+        // Non-canonical: deliver bytes as typed instead of on newline.
+        raw.local_flags.remove(LocalFlags::ICANON);
+        // No echo: our discarded keystrokes must not litter the screen.
+        // ISIG stays set so Ctrl+C still signals.
+        raw.local_flags.remove(LocalFlags::ECHO);
+        // VMIN = 0 / VTIME = 0 => a read never blocks.
+        raw.control_chars[SpecialCharacterIndices::VMIN as usize] = 0;
+        raw.control_chars[SpecialCharacterIndices::VTIME as usize] = 0;
+
+        if tcsetattr(std::io::stdin(), SetArg::TCSANOW, &raw).is_err() {
+            return Self { original: None };
+        }
+
+        Self {
+            original: Some(original),
+        }
+    }
+
+    /// Whether the reader actually took control of the terminal.
+    pub fn is_active(&self) -> bool {
+        self.original.is_some()
+    }
+
+    /// Poll for the shortcut byte without blocking.
+    ///
+    /// Non-shortcut bytes are discarded (mirroring [`poll_shortcut`]): the
+    /// command in progress owns the terminal, so it could not have used them.
+    pub fn poll(&self) -> bool {
+        if self.original.is_none() {
+            // Not a terminal: fall back to the regular check so callers have
+            // one code path.
+            return poll_shortcut();
+        }
+        if !tty_readable() {
+            return false;
+        }
+        let Some(byte) = read_tty_byte() else {
+            return false;
+        };
+        if byte == shortcut() {
+            SHORTCUT_PRESSED.store(true, Ordering::SeqCst);
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl Default for ShortcutReader {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Drop for ShortcutReader {
+    fn drop(&mut self) {
+        use nix::sys::termios::{SetArg, tcsetattr};
+
+        if let Some(original) = self.original.take() {
+            let _ = tcsetattr(std::io::stdin(), SetArg::TCSANOW, &original);
+        }
+    }
+}
+
 /// The configured shortcut byte.
 static BG_KEY: AtomicU8 = AtomicU8::new(DEFAULT_BG_KEY);
 
@@ -150,7 +251,6 @@ pub fn maybe_remap(elapsed: std::time::Duration) -> bool {
     install_susp_remap(shortcut());
     REMAP_ACTIVE.load(Ordering::SeqCst)
 }
-
 /// How long a pipe poll waits before giving up and letting the caller re-check
 /// the shortcut state.
 const READER_POLL_TIMEOUT_MS: i32 = 50;
