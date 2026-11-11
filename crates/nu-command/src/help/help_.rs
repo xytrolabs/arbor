@@ -81,7 +81,7 @@ There already is an alternative `help` command in the standard library you can t
             Value::string(help, head).into_pipeline_data()
         }
         if rest.is_empty() && find.is_none() {
-            let msg = r#"Welcome to Nushell.
+            let msg = r#"Welcome to Arbor.
 
 Here are some tips to help you get started.
   * help -h or help help - show available `help` subcommands and examples
@@ -89,7 +89,7 @@ Here are some tips to help you get started.
   * help <name> - display help about a particular command, alias, or module
   * help --find <text to search> - search through all help commands table
 
-Nushell works on the idea of a "pipeline". Pipelines are commands connected with the '|' character.
+Arbor works on the idea of a "pipeline". Pipelines are commands connected with the '|' character.
 Each stage in the pipeline works together to load, parse, and display information to you.
 
 [Examples]

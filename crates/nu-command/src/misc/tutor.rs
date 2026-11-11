@@ -159,9 +159,9 @@ fn tutor(
 
 fn default_tutor() -> &'static str {
     "
-Welcome to the Nushell tutorial!
+Welcome to the Arbor tutorial!
 
-With the `tutor` command, you'll be able to learn a lot about how Nushell
+With the `tutor` command, you'll be able to learn a lot about how Arbor
 works along with many fun tips and tricks to speed up everyday tasks.
 
 To get started, you can use `tutor begin`, and to see all the available
