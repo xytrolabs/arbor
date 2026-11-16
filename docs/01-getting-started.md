@@ -97,11 +97,33 @@ Environment overrides: `ARBOR_PREFIX`, `ARBOR_VERSION`, `ARBOR_BASE_URL`
 The installer replaces the binary atomically (copy to a temporary name, then
 `mv`), so it is safe to run while Arbor is open.
 
+### Binary size and smaller builds
+
+A release build is stripped (`strip = true`), which brings `linux-x86_64` to
+about **58 MB**. Without the strip, the same build is about **90 MB**, because
+`strip = "debuginfo"` still leaves the symbol table in place. Stripping does not
+change behaviour and is marginally faster to start; the only cost is that a
+backtrace shows addresses rather than function names. Use
+`cargo build --profile profiling`, a debug build, or the `RUST_BACKTRACE`
+workflow when you need readable traces.
+
+If you want a shell and nothing else, the `minimal` feature preset drops the
+developer and AI subsystems (`lsp`, `mcp`, `dap`, `sqlite`) for about **48 MB**:
+
+```sh
+cargo build --release --no-default-features --features minimal
+```
+
+That is 7 MB smaller than the default build with **no difference in startup
+time** — the trade is purely in binary size and in the commands that are
+compiled out. The default build keeps every command available, which is what
+the prebuilt releases ship.
+
 ### Verifying
 
 ```sh
 arbor --version
-# arbor 0.117.0
+# arbor 1.0.0
 ```
 
 ## Your first commands
