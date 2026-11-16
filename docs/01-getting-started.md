@@ -12,6 +12,91 @@ blocks, and it owns its own versioning, crate names and error namespace.
 
 If you already know Nushell, every command and idiom you use will work here.
 
+## Using Arbor as your login shell
+
+Arbor supports login shells (`-l` / `--login`). Switching with `chsh` works, but
+**three things must be in place first** — and skipping the third one gives you a
+shell with almost no commands.
+
+### 1. Install it outside your dotfiles
+
+`chsh` stores an absolute path, so the binary needs to exist permanently:
+
+```sh
+curl -fsSL https://xytro.site/arbor/install.sh | sh
+command -v arbor      # expect ~/.local/bin/arbor
+```
+
+### 2. Register it
+
+`chsh` refuses any shell not listed in `/etc/shells`:
+
+```sh
+echo "$HOME/.local/bin/arbor" | sudo tee -a /etc/shells
+chsh -s "$HOME/.local/bin/arbor"
+```
+
+### 3. Add a `login.nu` — this is the one people miss
+
+Arbor's `-l` runs `$nu.loginshell-path` (normally `login.nu` in its config
+directory). It does **not** read `/etc/profile` or `~/.profile`: those are POSIX
+files in a syntax Arbor does not execute.
+
+Measured consequence: with no `login.nu`, a login session starts with the bare
+`PATH` the display manager provides — `/usr/bin:/bin` — so `~/.local/bin`,
+`~/.cargo/bin`, Node, Flatpak apps and `arbor` itself are all missing.
+
+Recover them by letting a POSIX shell evaluate the profiles once and importing
+the `PATH` it produces:
+
+```nushell
+# ~/.config/arbor/login.nu
+let profile = (do -i {
+    ^sh -c '. /etc/profile 2>/dev/null; . "$HOME/.profile" 2>/dev/null; printf %s "$PATH"'
+    | complete
+})
+
+if $profile.exit_code == 0 and ($profile.stdout | str trim | is-not-empty) {
+    $env.PATH = ($profile.stdout | str trim | split row (char esep) | where {|p| $p | is-not-empty })
+}
+```
+
+Verified to restore both `~/.profile` additions and `/etc/profile` additions.
+
+### Trying it before committing
+
+`chsh` only affects new login sessions, so you can rehearse safely. Simulate a
+clean login, which is the situation a display manager creates:
+
+```sh
+env -i HOME="$HOME" PATH=/usr/bin:/bin TERM=xterm-256color \
+    ~/.local/bin/arbor -l -c 'print ($env.PATH | str join ":")'
+```
+
+If that prints a full `PATH` (and `arbor -l -c 'which cargo'` finds your tools),
+you are ready.
+
+### What will not carry over
+
+- Aliases and functions from `~/.bashrc` / `~/.zshrc`. Arbor reads its own
+  `config.nu`; keep POSIX aliases as bash blocks or redefine them.
+- POSIX shell syntax in scripts. Shebang your scripts (`#!/bin/bash`) and they
+  keep working — Arbor only interprets what *you* type.
+- Anything reading `$SHELL` sees the new value, which is the point, but confirm
+  your terminal and editor configs cope.
+
+### Recovery
+
+Keep bash installed. If a login ever misbehaves, from another TTY or a live
+session run:
+
+```sh
+chsh -s /bin/bash
+```
+
+or edit `/etc/passwd` directly. Nothing in your home directory is touched, so
+switching back is always safe.
+
 ## What Arbor owns
 
 Arbor is not a repackaged Nushell. It has its own identity end to end:
