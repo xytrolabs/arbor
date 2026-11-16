@@ -533,7 +533,10 @@ pub enum ShellError {
     ///
     /// Add a guard of some sort to check whether a denominator input to this division is zero, and branch off if that's the case.
     #[error("Division by zero.")]
-    #[diagnostic(code(arbor::shell::division_by_zero))]
+    #[diagnostic(
+        code(arbor::shell::division_by_zero),
+        help("Check that the divisor isn't zero before dividing — guard it, e.g. `if $d != 0 {{ $n / $d }}`.")
+    )]
     DivisionByZero {
         #[label("division by zero")]
         span: Span,

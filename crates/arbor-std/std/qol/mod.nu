@@ -28,6 +28,44 @@ def save-marks [marks: record] {
     $marks | save -f $file
 }
 
+# Show something Arbor can do that you might not have found yet.
+#
+# Run bare for one tip, or `tips --all` for the list. Tips only describe
+# features that actually exist in this build.
+@example "show one tip" { tips }
+@example "show every tip" { tips --all }
+export def tips [
+    --all (-a)   # Show every tip instead of a random one.
+] {
+    let tips = [
+        "Ctrl+B moves a running command to the background and gives you the prompt back."
+        "`mark` bookmarks this directory; `jump <name>` returns to it later — even after a restart."
+        "`up 3` walks up three parent directories."
+        "`mkcd dir` creates a directory and enters it in one step."
+        "`timer { cargo build }` prints how long a block took, and still returns its value."
+        "Pipelines carry data, not text — try `ls | where size > 1mb | sort-by size`."
+        "`open data.json | where status == \"active\"` works without grep, awk or jq."
+        "`docs` lists the guides; `docs 04-configuration` points at one."
+        "Type a bash `for` loop and Arbor runs it through bash for you."
+        "`sysinfo` shows the machine at a glance."
+        "`marks` lists your bookmarks as a table you can sort and filter."
+        "Nothing needs configuring: the standard library is already loaded."
+    ]
+    let total = ($tips | length)
+
+    if $all {
+        $tips
+        | enumerate
+        | each {|t| print $"  (ansi green)($t.index + 1).(ansi reset) ($t.item)" }
+        return
+    }
+
+    let pick = (do -i { random int 0..($total - 1) } | default 0)
+    let tip = ($tips | get $pick)
+    print $"(ansi green)tip:(ansi reset) ($tip)"
+    print $"(ansi green)    (ansi reset)(ansi yellow)($pick + 1)/($total)(ansi reset) — see all with `tips --all`"
+}
+
 # Bookmark the current directory.
 #
 # With no name the directory's basename is used, so `mark` in

@@ -118,4 +118,27 @@ mod tests {
             }
         }
     }
+
+    /// When several candidates are equally close, prefer one the user had
+    /// already typed out.
+    ///
+    /// `lst` is one edit from both `ast` and `ls`. Ties used to be resolved by
+    /// iteration order, so Arbor suggested `ast` — a command almost nobody
+    /// means — purely because it sorts first.
+    #[test]
+    fn ties_prefer_a_prefix_of_the_input() {
+        assert_eq!(did_you_mean(&["ast", "ls"], "lst").as_deref(), Some("ls"));
+        // Order must not matter.
+        assert_eq!(did_you_mean(&["ls", "ast"], "lst").as_deref(), Some("ls"));
+    }
+
+    /// On an equal distance with no prefix relationship, prefer the name that
+    /// is closest in length to what was typed.
+    #[test]
+    fn ties_prefer_the_closer_length() {
+        assert_eq!(
+            did_you_mean(&["abcdefg", "abcdx"], "abcdz").as_deref(),
+            Some("abcdx")
+        );
+    }
 }

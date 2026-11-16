@@ -150,28 +150,74 @@ fn find_best_match_for_name_impl<'c>(
         return Some(*c);
     }
 
-    let mut dist = dist.unwrap_or_else(|| cmp::max(lookup.len(), 3) / 3);
-    let mut best = None;
+    // Keep the cap fixed while scanning so that equally close candidates still
+    // compete. Previously the cap was tightened to `d - 1` as soon as a match
+    // was found, which silently discarded every later candidate at the same
+    // distance and made the winner depend on iteration order. Typing `lst`
+    // suggested `ast` instead of `ls` for exactly that reason.
+    let max_dist = dist.unwrap_or_else(|| cmp::max(lookup.len(), 3) / 3);
+
+    let mut best: Option<(&'c str, usize)> = None;
     for c in candidates {
         let lev_dist = if use_substring_score {
-            lev_distance_with_substrings(lookup, c, dist)
+            lev_distance_with_substrings(lookup, c, max_dist)
         } else {
-            lev_distance(lookup, c, dist)
+            lev_distance(lookup, c, max_dist)
         };
-        match lev_dist {
-            Some(0) => return Some(*c),
-            Some(d) => {
-                dist = d - 1;
-                best = Some(*c);
-            }
-            None => {}
+        let Some(d) = lev_dist else { continue };
+        if d == 0 {
+            return Some(*c);
         }
+        best = match best {
+            None => Some((*c, d)),
+            Some((prev, prev_d)) => {
+                if is_better_candidate(lookup, c, d, prev, prev_d) {
+                    Some((*c, d))
+                } else {
+                    Some((prev, prev_d))
+                }
+            }
+        };
     }
-    if best.is_some() {
-        return best;
+
+    if let Some((candidate, _)) = best {
+        return Some(candidate);
     }
 
     find_match_by_sorted_words(candidates, lookup)
+}
+
+/// Whether `candidate` (at distance `d`) is a better suggestion than `previous`
+/// (at distance `previous_d`).
+///
+/// Order of preference:
+/// 1. smaller edit distance;
+/// 2. a candidate the user had already finished typing (a prefix of the input),
+///    so `lst` prefers `ls` over `ast`;
+/// 3. a name closer in length to what was typed.
+fn is_better_candidate(
+    lookup: &str,
+    candidate: &str,
+    d: usize,
+    previous: &str,
+    previous_d: usize,
+) -> bool {
+    if d != previous_d {
+        return d < previous_d;
+    }
+
+    let candidate_is_prefix = is_prefix_of(candidate, lookup);
+    let previous_is_prefix = is_prefix_of(previous, lookup);
+    if candidate_is_prefix != previous_is_prefix {
+        return candidate_is_prefix;
+    }
+
+    lookup.len().abs_diff(candidate.len()) < lookup.len().abs_diff(previous.len())
+}
+
+/// Case-insensitive "is `prefix` the start of `input`".
+fn is_prefix_of(prefix: &str, input: &str) -> bool {
+    input.len() >= prefix.len() && input[..prefix.len()].eq_ignore_ascii_case(prefix)
 }
 
 fn find_match_by_sorted_words<'c>(iter_names: &[&'c str], lookup: &str) -> Option<&'c str> {

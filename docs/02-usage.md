@@ -53,6 +53,7 @@ Arbor ships these so common navigation needs no extra setup and no plugins.
 | `mkcd <dir>` | Create a directory and change into it |
 | `timer { … }` | Run a block and print how long it took |
 | `docs [topic]` | Show the docs index, or the URL of one guide |
+| `tips [--all]` | Show one thing Arbor can do, or list them all |
 
 ```nushell
 cd ~/src/arbor
