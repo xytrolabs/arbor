@@ -28,6 +28,14 @@ pub struct ArborConfig {
     /// function definitions, `{ ... }`) typed at the prompt and run them
     /// through `bash`.
     pub bash_blocks: bool,
+
+    /// Show the git branch / dirty / ahead-behind segment in the prompt.
+    ///
+    /// The prompt is rebuilt on every render, and looking up git state spawns
+    /// an external `git` process (~20 ms). That is invisible for interactive
+    /// use but adds up when many commands are run in a burst, such as during
+    /// scripted or agent-driven work. Set this to `false` in such setups.
+    pub prompt_git: bool,
 }
 
 impl Default for ArborConfig {
@@ -37,6 +45,7 @@ impl Default for ArborConfig {
             indent_scripts: true,
             indent_binary: String::new(),
             bash_blocks: true,
+            prompt_git: true,
         }
     }
 }
@@ -60,6 +69,7 @@ impl UpdateFromValue for ArborConfig {
                 "indent_scripts" => self.indent_scripts.update(val, path, errors),
                 "indent_binary" => self.indent_binary.update(val, path, errors),
                 "bash_blocks" => self.bash_blocks.update(val, path, errors),
+                "prompt_git" => self.prompt_git.update(val, path, errors),
                 _ => errors.unknown_option(path, val),
             }
         }

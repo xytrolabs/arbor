@@ -39,30 +39,54 @@ $env.PROMPT_COMMAND = {||
         $dir
     }
 
-    # git branch, dirty marker, and ahead/behind counts. Uses `complete` so
-    # git's stderr never leaks to the terminal (a repo without an upstream
-    # otherwise prints "fatal: no upstream configured").
-    let git_segment = (do -i {
-        let branch = (git rev-parse --abbrev-ref HEAD | complete | get stdout | str trim)
-        if ($branch | is-empty) or ($branch == 'HEAD') {
+    # git branch, dirty marker and ahead/behind counts.
+    #
+    # This runs on EVERY prompt render, so it must be cheap. A single
+    # `git status --porcelain=v2 --branch` reports the branch name, the
+    # ahead/behind counts and the dirty state in one process; the obvious
+    # alternative (rev-parse + status + two rev-list calls) spawned four
+    # processes per render, which cost ~80ms per prompt and made bursts of
+    # commands feel sluggish.
+    #
+    # `complete` is used so git's stderr never leaks onto the terminal (a repo
+    # without an upstream otherwise prints "fatal: no upstream configured").
+    #
+    # Set `$env.config.arbor.prompt_git = false` to skip this entirely: spawning
+    # git costs ~20ms per render, which is invisible interactively but adds up
+    # across large bursts of commands (scripted or agent-driven work).
+    let use_git = ($env.config.arbor?.prompt_git? | default true)
+    let git_segment = (if not $use_git { '' } else { do -i {
+        let r = (git status --porcelain=v2 --branch | complete)
+        if $r.exit_code != 0 {
             ''
         } else {
-            let dirty = (if (git status --porcelain | complete | get stdout | str trim | is-empty) { '' } else { '*' })
-            let counts = (do -i {
-                let r = (git rev-list --count '@{u}..HEAD' | complete)
-                let ahead = (if $r.exit_code == 0 { $r.stdout | str trim | into int } else { 0 })
-                let b = (git rev-list --count 'HEAD..@{u}' | complete)
-                let behind = (if $b.exit_code == 0 { $b.stdout | str trim | into int } else { 0 })
-                if $ahead > 0 and $behind > 0 { $" +($ahead) -($behind)" } else if $ahead > 0 { $" +($ahead)" } else if $behind > 0 { $" -($behind)" } else { '' }
-            } | default '')
-            if $use_colors {
-                let c = if ($dirty | is-empty) { (ansi purple) } else { (ansi yellow_bold) }
-                $" ($c)\(($branch)($dirty)($counts)\)(ansi reset)"
+            let lines = ($r.stdout | lines)
+            let head_line = ($lines | where {|l| $l | str starts-with '# branch.head ' } | first | default '')
+            let branch = (if ($head_line | is-empty) { '' } else { $head_line | str substring 14.. | str trim })
+            if ($branch | is-empty) or ($branch == '(detached)') {
+                ''
             } else {
-                $" \(($branch)($dirty)($counts)\)"
+                # Any non-header line means the work tree is dirty.
+                let dirty = (if ($lines | where {|l| not ($l | str starts-with '#') } | is-empty) { '' } else { '*' })
+                let ab_line = ($lines | where {|l| $l | str starts-with '# branch.ab ' } | first | default '')
+                let counts = (if ($ab_line | is-empty) {
+                    ''
+                } else {
+                    # Format: "# branch.ab +<ahead> -<behind>"
+                    let parts = ($ab_line | str replace '# branch.ab ' '' | split row ' ')
+                    let ahead = ($parts | where {|p| $p | str starts-with '+' } | first | default '+0' | str substring 1.. | into int)
+                    let behind = ($parts | where {|p| $p | str starts-with '-' } | first | default '-0' | str substring 1.. | into int)
+                    if $ahead > 0 and $behind > 0 { $" +($ahead) -($behind)" } else if $ahead > 0 { $" +($ahead)" } else if $behind > 0 { $" -($behind)" } else { '' }
+                })
+                if $use_colors {
+                    let c = if ($dirty | is-empty) { (ansi purple) } else { (ansi yellow_bold) }
+                    $" ($c)\(($branch)($dirty)($counts)\)(ansi reset)"
+                } else {
+                    $" \(($branch)($dirty)($counts)\)"
+                }
             }
         }
-    } | default '')
+    } | default '' })
 
     # Exit code + duration on the second line, only when relevant.
     let status_segment = (do -i {

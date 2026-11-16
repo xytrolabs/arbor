@@ -123,6 +123,29 @@ definitions and `{ ... }` groups.
 $env.config.arbor.bash_blocks = false
 ```
 
+### `prompt_git`
+
+| | |
+|---|---|
+| Type | bool |
+| Default | `true` |
+
+Show the git segment (branch, dirty marker, ahead/behind) in the prompt.
+
+The prompt is rebuilt on every render, and reading git state spawns an external
+`git` process — about 20 ms on a large repository. That is invisible when you
+are typing, but it adds up over hundreds of commands in a burst, such as
+scripted or agent-driven work. Turning this off makes a prompt render roughly
+0.2 ms instead of 21 ms.
+
+```nushell
+$env.config.arbor.prompt_git = false
+```
+
+The segment is a single `git status --porcelain=v2 --branch` call. Earlier
+versions used four separate git invocations per render, which cost about 83 ms
+per prompt; if you modify the prompt, keep it to one git process.
+
 ## Common upstream settings
 
 These come from Nushell and are documented in the upstream book. The ones most
