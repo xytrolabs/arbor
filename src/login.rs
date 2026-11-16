@@ -24,7 +24,8 @@
 
 use std::env;
 use std::process::{Command, Stdio};
-use std::time::{Duration, Instant};
+use std::sync::mpsc;
+use std::time::Duration;
 
 #[cfg(unix)]
 // `process_group`, used below, is a `CommandExt` method on unix.
@@ -73,6 +74,8 @@ pub fn source_login_profiles() {
     let quoted = shell_quote(&dump_path.to_string_lossy());
     let script = profile_script(&quoted);
 
+    // `mut` is needed here: the waiter thread calls `wait()`, which takes
+    // `&mut self` on the child it owns.
     let Ok(mut child) = Command::new("sh")
         .arg("-c")
         .arg(&script)
@@ -88,42 +91,27 @@ pub fn source_login_profiles() {
         return;
     };
 
-    let deadline = Instant::now() + PROFILE_TIMEOUT;
-    loop {
-        match child.try_wait() {
-            Ok(Some(_)) => break,
-            Ok(None) => {
-                if Instant::now() >= deadline {
-                    kill_profile_shell(&mut child);
-                    // Timed out: leave the environment alone rather than
-                    // importing a half-built one.
-                    let _ = std::fs::remove_file(&dump_path);
-                    return;
-                }
-                std::thread::sleep(Duration::from_millis(20));
-            }
-            Err(_) => break,
-        }
+    // Wait for the profiles with a deadline, but without polling: sleeping in
+    // 20 ms steps added that much dead time to every single login. The waiter
+    // thread reaps the child in every case, including after a kill.
+    let pid = Pid::from_raw(child.id() as i32);
+    let (done_tx, done_rx) = mpsc::channel();
+    std::thread::spawn(move || {
+        let _ = done_tx.send(child.wait());
+    });
+
+    if done_rx.recv_timeout(PROFILE_TIMEOUT).is_err() {
+        // Timed out: kill the whole group, and leave the environment alone
+        // rather than importing a half-built one.
+        let _ = kill(Pid::from_raw(-pid.as_raw()), Signal::SIGKILL);
+        let _ = std::fs::remove_file(&dump_path);
+        return;
     }
 
     if let Ok(dump) = std::fs::read(&dump_path) {
         apply_dump(&dump);
     }
     let _ = std::fs::remove_file(&dump_path);
-}
-
-/// Kill the profile shell and everything it started.
-///
-/// The shell runs in its own process group (see `process_group(0)` above), so a
-/// negative pid signals the whole group. Without this, killing only `sh` would
-/// leave a grandchild such as `sleep` alive and holding the terminal open, which
-/// looks exactly like the hang this timeout exists to prevent.
-#[cfg(unix)]
-fn kill_profile_shell(child: &mut std::process::Child) {
-    let pid = Pid::from_raw(child.id() as i32);
-    let _ = kill(Pid::from_raw(-pid.as_raw()), Signal::SIGKILL);
-    let _ = child.kill();
-    let _ = child.wait();
 }
 
 /// Build the `sh` script that evaluates the profiles and dumps the environment.
