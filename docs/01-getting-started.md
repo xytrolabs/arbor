@@ -97,6 +97,32 @@ chsh -s /bin/bash
 or edit `/etc/passwd` directly. Nothing in your home directory is touched, so
 switching back is always safe.
 
+### Shipping Arbor as a distribution default
+
+Use `install.sh --login-shell` to install the binary and write the `login.nu`
+above in one step:
+
+```sh
+./install.sh --login-shell
+```
+
+It will not overwrite an existing `login.nu`, and if Arbor currently resolves
+to a legacy config directory it writes there rather than creating
+`~/.config/arbor` (which would take precedence and make the existing
+configuration appear to vanish).
+
+Per-family notes if you are packaging Arbor as the default shell:
+
+| Family | Where the pieces go |
+|---|---|
+| **Arch / CachyOS** (`Breeze`) | `PKGBUILD` installs `/usr/bin/arbor`; list the path in the package's `shells` array so `/etc/shells` is updated. Ship the default via `/etc/skel/.config/arbor/login.nu`. |
+| **Debian** (`Core`) | `.deb` installs `/usr/bin/arbor`; append to `/etc/shells` in `postinst`; put the default in `/etc/skel/.config/arbor/login.nu`. |
+| **Fedora Silverblue** (`Evergreen`) | `/usr` is immutable, so Arbor belongs in the base image or an `rpm-ostree` layer — do not rely on writing `/usr/local/bin` at runtime. `/etc` is a writable overlay, so `/etc/shells` and `chsh` still work; `usermod -s` is the more scriptable route. Home directories persist across rebases, so per-user `login.nu` survives upgrades, but anything placed in `/usr` must come from the image. |
+
+Whatever the family, the login file is the part that must not be skipped: a
+distribution that ships Arbor as the default shell without it gives every user a
+shell whose `PATH` lacks their own tools.
+
 ## What Arbor owns
 
 Arbor is not a repackaged Nushell. It has its own identity end to end:
