@@ -59,6 +59,7 @@ pub fn load_standard_library(
         ("mod.nu", "std/util", include_str!("../std/util/mod.nu")),
         ("mod.nu", "std/xml", include_str!("../std/xml/mod.nu")),
         ("mod.nu", "std/sysinfo", include_str!("../std/sysinfo/mod.nu")),
+        ("mod.nu", "std/qol", include_str!("../std/qol/mod.nu")),
         ("mod.nu", "std/config", include_str!("../std/config/mod.nu")),
         (
             "mod.nu",

@@ -8,5 +8,13 @@
 # startup so users can rely on the load order. Leave it empty (or assign only
 # intentional overrides) unless you need Nu-side default setup.
 #
-# version = "0.117.0"
+# version = "1.0.0"
 $env.config = {}
+
+# Arbor: bring the whole standard library into scope by default.
+#
+# Startup only imports `std/prelude`, so without this a fresh install answers
+# "command not found" for `sysinfo`, `mark`, `jump`, `up`, `docs`, `ellie`,
+# `assert` and the rest. Importing it here means Arbor works out of the box —
+# the same promise Fish makes — instead of requiring a dotfile edit first.
+use std *

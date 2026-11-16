@@ -39,18 +39,44 @@ Disk /  589.7 GB / 1.0 TB
 Temp    37°C
 ```
 
-`sysinfo` lives in the standard library, so it is available once std is
-imported. At startup Arbor loads only `std/prelude`, which is why `banner`
-works bare but std subcommands do not. Import everything once in your
-`config.nu` if you want the full set available:
+### Quality-of-life helpers
+
+Arbor ships these so common navigation needs no extra setup and no plugins.
+
+| Command | Does |
+|---|---|
+| `mark [name]` | Bookmark the current directory (defaults to its own name) |
+| `marks` | List bookmarks as a table |
+| `jump [name]` | Change to a bookmark, or list them when called bare |
+| `unmark <name>` | Remove a bookmark |
+| `up [n]` | Go up `n` parent directories (default 1) |
+| `docs [topic]` | Show the docs index, or the URL of one guide |
 
 ```nushell
-use std *
+cd ~/src/arbor
+mark                      # bookmarked "arbor" -> ~/src/arbor
+cd /tmp
+jump arbor                # straight back
+up 2                      # /home/you
+
+docs                      # list the guides
+docs 04-configuration     # URL for one guide
 ```
 
-Without that, call it through the module (`use std/sysinfo`, or
-`use std *` per-script). This is the same rule for every std command, including
-`ellie`, `assert`, `iter` and `bench`.
+Bookmarks persist in `marks.json` under `$nu.data-dir`, so they survive
+sessions. `jump` reports a clear error if a bookmarked directory has since been
+deleted rather than silently failing.
+
+### The standard library is loaded by default
+
+Startup imports `std/prelude`, and Arbor's default config also runs
+`use std *`, so the entire standard library is available in a fresh install
+without touching any dotfile: `sysinfo`, `mark`, `jump`, `up`, `docs`, `assert`,
+`ellie`, `iter`, `bench` and the rest. Importing it costs nothing measurable —
+startup stays at about 9 ms.
+
+If you would rather keep your namespace minimal, remove the `use std *` line
+from `$nu.config-path` and call the commands through their module instead.
 
 ### External programs
 

@@ -17,6 +17,8 @@ export use std/xml
 # `sysinfo` lives in its own module so the command can share the module name
 # via `export def main` (a module may not export a command named after itself).
 export use std/sysinfo
+# Star re-export so `use std *` puts `mark`, `jump`, `up` and `docs` in scope.
+export use std/qol *
 export use std/config
 export use std/testing
 export use std/random
