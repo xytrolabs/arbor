@@ -133,18 +133,29 @@ $env.config.arbor.bash_blocks = false
 Show the git segment (branch, dirty marker, ahead/behind) in the prompt.
 
 The prompt is rebuilt on every render, and reading git state spawns an external
-`git` process — about 20 ms on a large repository. That is invisible when you
-are typing, but it adds up over hundreds of commands in a burst, such as
-scripted or agent-driven work. Turning this off makes a prompt render roughly
-0.2 ms instead of 21 ms.
+`git` process. That is invisible when you are typing, but it dominates the cost
+of running many commands in a row — exactly what scripted and agent-driven work
+looks like.
+
+Measured with `scripts/burst_benchmark.py` (200 commands: 100 external, 80
+internal, 20 pipelines, in an interactive session):
+
+| `prompt_git` | 200 commands | per command |
+|---|---|---|
+| `true` (default) | 3.41 s | 17.1 ms |
+| `false` | 1.14 s | 5.7 ms |
+
+Every command still ran in both cases (100/100 external commands completed, no
+errors), so this setting changes speed, not correctness. Turn it off when you
+are driving Arbor from a script or an agent:
 
 ```nushell
 $env.config.arbor.prompt_git = false
 ```
 
 The segment is a single `git status --porcelain=v2 --branch` call. Earlier
-versions used four separate git invocations per render, which cost about 83 ms
-per prompt; if you modify the prompt, keep it to one git process.
+versions used four separate git invocations per render; if you modify the
+prompt, keep it to one git process.
 
 ## Common upstream settings
 
