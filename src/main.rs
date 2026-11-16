@@ -4,6 +4,7 @@ mod config_files;
 mod experimental_options;
 mod ide;
 mod logger;
+mod login;
 mod run;
 mod signals;
 #[cfg(unix)]
@@ -314,6 +315,22 @@ fn main() -> Result<()> {
         .get_config()
         .use_ansi_coloring
         .get(&engine_state);
+
+    // A login shell must start with the environment that `/etc/profile` and
+    // `~/.profile` would have produced. Arbor cannot evaluate those files (they
+    // are POSIX shell scripts, not Arbor's language) and `login.nu` runs too
+    // late to fill in a missing `PATH`, so `login.rs` evaluates them with the
+    // system `sh` and imports the result.
+    //
+    // This must run before `gather_parent_env_vars`, which reads the process
+    // environment once. It is deliberately not gated on `--no-config-file`:
+    // `-n` skips Arbor's own config files, while the POSIX profiles are part of
+    // the login-shell contract and cost nothing when absent.
+    if engine_state.is_login {
+        start_time = arbor_utils::time::Instant::now();
+        login::source_login_profiles();
+        perf!("source login profiles", start_time, use_color);
+    }
 
     // Set up logger
     start_time = arbor_utils::time::Instant::now();

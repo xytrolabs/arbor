@@ -36,32 +36,32 @@ echo "$HOME/.local/bin/arbor" | sudo tee -a /etc/shells
 chsh -s "$HOME/.local/bin/arbor"
 ```
 
-### 3. Add a `login.nu` — this is the one people miss
+### 3. Nothing else — profiles are loaded for you
 
-Arbor's `-l` runs `$nu.loginshell-path` (normally `login.nu` in its config
-directory). It does **not** read `/etc/profile` or `~/.profile`: those are POSIX
-files in a syntax Arbor does not execute.
+Arbor reads `/etc/profile` and `~/.profile` when it starts as a login shell,
+just as bash and zsh do, and imports the environment they produce. You do not
+need a `login.nu` for this, and you do not need to edit any dotfiles.
 
-Measured consequence: with no `login.nu`, a login session starts with the bare
-`PATH` the display manager provides — `/usr/bin:/bin` — so `~/.local/bin`,
-`~/.cargo/bin`, Node, Flatpak apps and `arbor` itself are all missing.
+The profiles are POSIX shell scripts, and `/etc/profile` is a chain of
+`if`/`case`/function definitions that Arbor's parser cannot run. So Arbor hands
+them to the system's `sh`, imports the resulting environment, and only then
+reads its own configuration — which is why `PATH`, `EDITOR`, `JAVA_HOME` and
+anything else your profile exports are visible to both your commands and any
+program you launch.
 
-Recover them by letting a POSIX shell evaluate the profiles once and importing
-the `PATH` it produces:
+Three properties make this safe to rely on:
 
-```nushell
-# ~/.config/arbor/login.nu
-let profile = (do -i {
-    ^sh -c '. /etc/profile 2>/dev/null; . "$HOME/.profile" 2>/dev/null; printf %s "$PATH"'
-    | complete
-})
+- **It cannot hang.** The profile shell gets five seconds, then it and
+  everything it started are killed. A profile that blocks on a `read` or a
+  network mount cannot lock you out of your account.
+- **A missing or broken profile is not fatal.** Files are checked before being
+  sourced; a broken `.profile` cannot stop Arbor from starting, because starting
+  is the only way to fix it.
+- **It only happens for login shells.** `-l`, `--login`, or being invoked as
+  `-arbor` by `chsh`/`login(1)`. A normal `arbor` invocation inherits the
+  environment it was given and touches nothing.
 
-if $profile.exit_code == 0 and ($profile.stdout | str trim | is-not-empty) {
-    $env.PATH = ($profile.stdout | str trim | split row (char esep) | where {|p| $p | is-not-empty })
-}
-```
-
-Verified to restore both `~/.profile` additions and `/etc/profile` additions.
+Verify it with the rehearsal command below.
 
 ### Trying it before committing
 
@@ -99,29 +99,21 @@ switching back is always safe.
 
 ### Shipping Arbor as a distribution default
 
-Use `install.sh --login-shell` to install the binary and write the `login.nu`
-above in one step:
-
-```sh
-./install.sh --login-shell
-```
-
-It will not overwrite an existing `login.nu`, and if Arbor currently resolves
-to a legacy config directory it writes there rather than creating
-`~/.config/arbor` (which would take precedence and make the existing
-configuration appear to vanish).
+Nothing extra is required: install the binary, list it in `/etc/shells`, and
+every user gets their profiles loaded. There is no per-user `login.nu` and no
+`/etc/skel` entry to ship.
 
 Per-family notes if you are packaging Arbor as the default shell:
 
 | Family | Where the pieces go |
 |---|---|
-| **Arch / CachyOS** (`Breeze`) | `PKGBUILD` installs `/usr/bin/arbor`; list the path in the package's `shells` array so `/etc/shells` is updated. Ship the default via `/etc/skel/.config/arbor/login.nu`. |
-| **Debian** (`Core`) | `.deb` installs `/usr/bin/arbor`; append to `/etc/shells` in `postinst`; put the default in `/etc/skel/.config/arbor/login.nu`. |
-| **Fedora Silverblue** (`Evergreen`) | `/usr` is immutable, so Arbor belongs in the base image or an `rpm-ostree` layer — do not rely on writing `/usr/local/bin` at runtime. `/etc` is a writable overlay, so `/etc/shells` and `chsh` still work; `usermod -s` is the more scriptable route. Home directories persist across rebases, so per-user `login.nu` survives upgrades, but anything placed in `/usr` must come from the image. |
+| **Arch / CachyOS** (`Breeze`) | `PKGBUILD` installs `/usr/bin/arbor`; list the path in the package's `shells` array so `/etc/shells` is updated. |
+| **Debian** (`Core`) | `.deb` installs `/usr/bin/arbor`; append to `/etc/shells` in `postinst`. |
+| **Fedora Silverblue** (`Evergreen`) | `/usr` is immutable, so Arbor belongs in the base image or an `rpm-ostree` layer — do not rely on writing `/usr/local/bin` at runtime. `/etc` is a writable overlay, so `/etc/shells` and `chsh` still work; `usermod -s` is the more scriptable route. |
 
-Whatever the family, the login file is the part that must not be skipped: a
-distribution that ships Arbor as the default shell without it gives every user a
-shell whose `PATH` lacks their own tools.
+Because profile handling lives in the binary, a distribution that upgrades Arbor
+upgrades the login behaviour with it. Nothing has to be coordinated with user
+home directories.
 
 ## What Arbor owns
 

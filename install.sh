@@ -35,7 +35,6 @@ SHARE_DIR="$PREFIX/share/arbor"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$PWD}")" 2>/dev/null && pwd || echo "$PWD")"
 
 MODE="auto"        # auto | binary | source | nobuild
-LOGIN_SHELL=0      # also write a login.nu that sources POSIX profiles
 DRY_RUN=0
 SRC_DIR=""
 TMP_DIR=""
@@ -354,75 +353,6 @@ check_indent() {
   fi
 }
 
-# ── Login shell setup ───────────────────────────────────────────────────
-# Arbor's `-l` runs login.nu and does NOT read /etc/profile or ~/.profile,
-# because those are POSIX files in a syntax Arbor does not execute. Without a
-# login.nu a login session starts with only the PATH the display manager hands
-# over (typically /usr/bin:/bin), so ~/.local/bin, ~/.cargo/bin, Flatpak and
-# other profile additions are missing.
-#
-# This writes a login.nu that lets a real POSIX shell evaluate the profiles
-# once and imports the resulting PATH. Works for Arch/CachyOS, Debian and
-# Fedora (Silverblue included) since all three source /etc/profile.d from
-# /etc/profile.
-install_login_nu() {
-  local config_root="${XDG_CONFIG_HOME:-$HOME/.config}"
-  local cfg_dir="$config_root/arbor"
-
-  # If Arbor currently resolves to a legacy config directory, write there.
-  # Creating ~/.config/arbor would take precedence over it and make an
-  # existing configuration appear to vanish.
-  if [ ! -d "$cfg_dir" ]; then
-    local legacy
-    for legacy in nushell waash; do
-      if [ -d "$config_root/$legacy" ]; then
-        cfg_dir="$config_root/$legacy"
-        info "Using existing config directory: $cfg_dir"
-        break
-      fi
-    done
-  fi
-
-  local login="$cfg_dir/login.nu"
-  if [ -f "$login" ]; then
-    warn "login.nu already exists, leaving it untouched: $login"
-    return 0
-  fi
-
-  if [ "$DRY_RUN" -eq 1 ]; then
-    info "Would write login shell setup -> $login"
-    return 0
-  fi
-
-  mkdir -p "$cfg_dir"
-  cat > "$login" <<'NUE'
-# Arbor login shell setup.
-#
-# Arbor's `-l` runs this file instead of /etc/profile and ~/.profile, which are
-# POSIX files in a syntax Arbor does not execute. Without it, a login session
-# starts with the bare PATH the display manager provides, losing ~/.local/bin,
-# ~/.cargo/bin, Node, Flatpak and anything else your profile adds.
-#
-# So: run a real POSIX shell, let it evaluate the profiles, and import the PATH
-# it produces. /etc/profile sources /etc/profile.d on Arch, Debian and Fedora,
-# so this covers those families.
-let profile = (do -i {
-    ^sh -c '. /etc/profile 2>/dev/null; . "$HOME/.profile" 2>/dev/null; printf %s "$PATH"'
-    | complete
-})
-
-if $profile.exit_code == 0 and ($profile.stdout | str trim | is-not-empty) {
-    $env.PATH = (
-        $profile.stdout
-        | str trim
-        | split row (char esep)
-        | where {|p| $p | is-not-empty }
-    )
-}
-NUE
-  ok "Wrote login shell setup -> $login"
-}
-
 # ── Version / help ──────────────────────────────────────────────────────
 print_version() {
   local ver=""
@@ -454,8 +384,6 @@ Usage:
 Options:
   --prefix DIR     Install under DIR (default ~/.local)
   --pin VERSION    Download this release (e.g. v1.0.0) instead of latest
-  --login-shell    Also write login.nu so a login session inherits the PATH
-                   from /etc/profile and ~/.profile (needed before `chsh`)
   --from-source    Skip the prebuilt binary; build with cargo
   --binary         Require a prebuilt binary (never build from source)
   --no-build       Reuse ./target/release/arbor (no download, no build)
@@ -482,7 +410,6 @@ main() {
       --from-source)  MODE="source" ;;
       --binary)       MODE="binary" ;;
       --no-build)     MODE="nobuild" ;;
-      --login-shell)  LOGIN_SHELL=1 ;;
       --dry-run)      DRY_RUN=1 ;;
       --version)      print_version; exit 0 ;;
       --pin)
@@ -537,7 +464,6 @@ main() {
   fi
 
   install_binary "$BIN_PATH"
-  [ "$LOGIN_SHELL" -eq 1 ] && install_login_nu
   check_indent
 
   echo
