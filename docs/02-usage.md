@@ -17,6 +17,41 @@ open file.toml | get package
 str length "hello"
 ```
 
+### `sysinfo` — a system overview
+
+`sysinfo` prints a compact summary of the machine: host, OS, kernel, uptime,
+CPU, memory, the root disk and package temperature. Every value is read
+best-effort, so a container or a platform without the data shows `-` instead of
+failing.
+
+```nushell
+sysinfo
+```
+
+```text
+Host    raf-cachy
+OS      Linux (CachyOS Linux rolling)
+Kernel  7.3.3-1-cachyos
+Uptime  17hr 41min 47sec
+CPU     13th Gen Intel(R) Core(TM) i5-13400F  load 8.99
+Memory  13.2 GB / 50.3 GB  26%
+Disk /  589.7 GB / 1.0 TB
+Temp    37°C
+```
+
+`sysinfo` lives in the standard library, so it is available once std is
+imported. At startup Arbor loads only `std/prelude`, which is why `banner`
+works bare but std subcommands do not. Import everything once in your
+`config.nu` if you want the full set available:
+
+```nushell
+use std *
+```
+
+Without that, call it through the module (`use std/sysinfo`, or
+`use std *` per-script). This is the same rule for every std command, including
+`ellie`, `assert`, `iter` and `bench`.
+
 ### External programs
 
 If a name is not an Arbor command, Arbor looks on `PATH`:

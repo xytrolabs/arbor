@@ -14,6 +14,9 @@ export use std/iter
 export use std/log
 export use std/math
 export use std/xml
+# `sysinfo` lives in its own module so the command can share the module name
+# via `export def main` (a module may not export a command named after itself).
+export use std/sysinfo
 export use std/config
 export use std/testing
 export use std/random
