@@ -328,7 +328,10 @@ pub enum ParseError {
     MultipleRestParams(#[label = "multiple rest params"] Span),
 
     #[error("Variable not found.")]
-    #[diagnostic(code(arbor::parser::variable_not_found))]
+    #[diagnostic(
+        code(arbor::parser::variable_not_found),
+        help("Declare it first with `let name = value`, or check the spelling. Environment variables are read as `$env.NAME`.")
+    )]
     VariableNotFound(DidYouMean, #[label = "variable not found. {0}"] Span),
 
     #[error("Use $env.{0} instead of ${0}.")]
