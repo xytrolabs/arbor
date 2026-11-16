@@ -71,3 +71,6 @@ tarpaulin-report.html
 .splashboard.toml
 
 .jarvis/
+
+# Local distribution artifacts (published to the site)
+dist/

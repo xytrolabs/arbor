@@ -21,7 +21,8 @@
 #   ARBOR_PREFIX      install prefix      (default: ~/.local)
 #   ARBOR_VERSION     version to download (default: latest release)
 #   ARBOR_REPO        GitHub repo         (default: xytrolabs/arbor)
-#   ARBOR_BASE_URL    asset base URL      (default: GitHub release assets)
+#   ARBOR_BASE_URL    asset base URL      (default: https://xytro.site/arbor/dl,
+#                                            with GitHub release assets as fallback)
 
 set -euo pipefail
 
@@ -29,7 +30,10 @@ set -euo pipefail
 PREFIX="${ARBOR_PREFIX:-$HOME/.local}"
 ARBOR_VERSION="${ARBOR_VERSION:-}"
 ARBOR_REPO="${ARBOR_REPO:-xytrolabs/arbor}"
-ARBOR_BASE_URL="${ARBOR_BASE_URL:-}"
+# Site-hosted assets first: no API rate limits, no GitHub dependency, and the
+# version-less aliases work without knowing the current release tag. GitHub is
+# still tried afterwards, so an outage on either side is survivable.
+ARBOR_BASE_URL="${ARBOR_BASE_URL:-https://xytro.site/arbor/dl}"
 BIN_DIR="$PREFIX/bin"
 SHARE_DIR="$PREFIX/share/arbor"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$PWD}")" 2>/dev/null && pwd || echo "$PWD")"
@@ -39,8 +43,10 @@ DRY_RUN=0
 SRC_DIR=""
 TMP_DIR=""
 ASSET_URL=""
+ASSET_DIR=""
 OS_NAME=""
 TARGET=""
+TARGET_FALLBACK=""
 
 cleanup() {
   if [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ]; then rm -rf "$TMP_DIR"; fi
@@ -96,6 +102,14 @@ detect_target() {
   else
     warn "No prebuilt binary for ${uname_s}/${uname_m}; a source build will be used"
   fi
+
+  # musl is the preferred Linux download (one static binary for every distro),
+  # but not every mirror or release carries it. The glibc build of the same
+  # architecture is a valid fallback, so Linux users never drop to a source
+  # build just because the static asset is missing.
+  case "$TARGET" in
+    *-musl*) TARGET_FALLBACK="$(echo "$TARGET" | sed 's/musl/gnu/')" ;;
+  esac
 }
 
 # ── Network helpers ─────────────────────────────────────────────────────
@@ -138,30 +152,30 @@ archive_ext() {
   case "$TARGET" in *windows*) echo zip ;; *) echo tar.gz ;; esac
 }
 
-asset_stem() {
-  # arbor-<version>-<target>, or empty when the version is unknown.
-  [ -n "$ARBOR_VERSION" ] || return 0
-  printf 'arbor-%s-%s' "${ARBOR_VERSION#v}" "$TARGET"
-}
-
 # Sets ASSET_URL when a downloadable asset exists.
 try_binary() {
   [ -n "$TARGET" ] || return 1
-  local ext stem
+  local ext
   ext="$(archive_ext)"
-  stem="$(asset_stem)"
 
   local -a candidates=()
-  if [ -n "$ARBOR_BASE_URL" ]; then
-    [ -n "$stem" ] && candidates+=("${ARBOR_BASE_URL%/}/${stem}.${ext}")
-    candidates+=("${ARBOR_BASE_URL%/}/${TARGET}.${ext}")
-  else
+  local t stem
+  # Primary target first, then the architecture's other libc. Within each
+  # target, the versioned asset first, then the version-less "latest" alias.
+  for t in $TARGET ${TARGET_FALLBACK:-}; do
+    [ -n "$t" ] || continue
+    stem=""
+    [ -n "$ARBOR_VERSION" ] && stem="arbor-${ARBOR_VERSION#v}-$t"
+    if [ -n "$ARBOR_BASE_URL" ]; then
+      [ -n "$stem" ] && candidates+=("${ARBOR_BASE_URL%/}/${stem}.${ext}")
+      candidates+=("${ARBOR_BASE_URL%/}/arbor-${t}.${ext}")
+    fi
     if [ -n "$stem" ]; then
       candidates+=("https://github.com/${ARBOR_REPO}/releases/download/${ARBOR_VERSION}/${stem}.${ext}")
     fi
     # `latest/download` needs a stable, version-less name; try the tag-less form.
-    candidates+=("https://github.com/${ARBOR_REPO}/releases/latest/download/arbor-${TARGET}.${ext}")
-  fi
+    candidates+=("https://github.com/${ARBOR_REPO}/releases/latest/download/arbor-${t}.${ext}")
+  done
 
   local url
   for url in "${candidates[@]}"; do
@@ -172,6 +186,12 @@ try_binary() {
     fi
     if have curl && curl -fsIL --connect-timeout 15 "$url" >/dev/null 2>&1; then
       ASSET_URL="$url"
+      # Report the target actually downloaded: falling back to the glibc build
+      # should not still claim musl, or support requests get confusing.
+      if [ "$TARGET_FALLBACK" != "" ] && echo "$url" | grep -qF "$TARGET_FALLBACK"; then
+        warn "No ${TARGET} asset available; using ${TARGET_FALLBACK}"
+        TARGET="$TARGET_FALLBACK"
+      fi
       return 0
     fi
   done
@@ -234,6 +254,10 @@ download_binary() {
   found="$(find "$TMP_DIR/x" -type f \( -name arbor -o -name arbor.exe \) -print -quit)"
   [ -n "$found" ] || die "Archive did not contain an arbor binary"
   BIN_PATH="$found"
+  # The archive ships arbor, share/arbor/arbor.ind and docs/ side by side. Keep
+  # the root so a prebuilt install gets the helper library and documentation
+  # too, not just the binary.
+  ASSET_DIR="$(dirname "$found")"
   chmod +x "$BIN_PATH" 2>/dev/null || true
   ok "Extracted $(basename "$BIN_PATH")"
 }
@@ -310,6 +334,10 @@ install_binary() {
 
   local base="$REPO_DIR"
   [ -n "$SRC_DIR" ] && base="$SRC_DIR"
+  # A downloaded archive is a third source of share/ and docs/.
+  if [ -z "$SRC_DIR" ] && [ -n "$ASSET_DIR" ] && [ -d "$ASSET_DIR" ]; then
+    base="$ASSET_DIR"
+  fi
   if [ -f "$base/share/arbor/arbor.ind" ]; then
     cp "$base/share/arbor/arbor.ind" "$SHARE_DIR/arbor.ind"
     ok "Installed helper library -> $SHARE_DIR/arbor.ind"
