@@ -326,11 +326,21 @@ add_to_path() {
   case ":$PATH:" in
     *":$BIN_DIR:"*) : ;;
     *)
+      if [ "$DRY_RUN" -eq 1 ]; then
+        info "Would add $BIN_DIR to your PATH in your shell rc"
+        return 0
+      fi
       warn "Adding $BIN_DIR to your PATH..."
+      # A fresh HOME has no rc file to append to: containers, image builds, and
+      # a user whose home directory is created later all hit this. Without the
+      # mkdir the redirect fails and, under `set -u`/`set -e`, install aborts
+      # with a message about a missing dotfile instead of finishing.
+      mkdir -p "$HOME" 2>/dev/null || true
       local shell_name
       shell_name="${SHELL:-$(basename "$(command -v sh)")}"
       case "$shell_name" in
         *fish)
+          mkdir -p "$HOME/.config/fish" 2>/dev/null || true
           fish -c "fish_add_path $BIN_DIR" 2>/dev/null \
             || echo "fish_add_path $BIN_DIR" >> "$HOME/.config/fish/config.fish" ;;
         *zsh)
