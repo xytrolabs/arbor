@@ -1,7 +1,8 @@
 # Quality-of-life helpers for interactive use.
 #
 # Directory bookmarks (`mark`, `jump`, `marks`, `unmark`), fast ancestor
-# navigation (`up`), and a pointer to the Arbor documentation (`docs`).
+# navigation (`up`), directory creation plus navigation (`mkcd`), timing a
+# block (`timer`), and a pointer to the Arbor documentation (`docs`).
 #
 # Bookmarks live in a small JSON file under `$nu.data-dir`, so they persist
 # across sessions and are shared by every Arbor instance.
@@ -111,6 +112,31 @@ export def --env up [
     }
     let target = (1..$levels | reduce --fold $env.PWD {|_it, acc| $acc | path dirname })
     cd $target
+}
+
+# Create a directory (and its parents) and change into it.
+@example "create and enter a scratch dir" { mkcd /tmp/scratch/one }
+export def --env mkcd [
+    dir: path   # Directory to create and enter.
+] {
+    mkdir $dir
+    let target = ($dir | path expand)
+    cd $target
+}
+
+# Run a block and report how long it took.
+#
+# Stateless: the timing lives in the command, not in the environment, so it
+# works the same in a script and at the prompt.
+@example "time a sleep" { timer { sleep 100ms } }
+export def timer [
+    body: closure   # Block to run and time.
+] {
+    let started = (date now)
+    let result = (do $body)
+    let elapsed = ((date now) - $started)
+    print $"took (ansi yellow)($elapsed)(ansi reset)"
+    $result
 }
 
 # Point at the Arbor documentation.

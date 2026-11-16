@@ -50,6 +50,8 @@ Arbor ships these so common navigation needs no extra setup and no plugins.
 | `jump [name]` | Change to a bookmark, or list them when called bare |
 | `unmark <name>` | Remove a bookmark |
 | `up [n]` | Go up `n` parent directories (default 1) |
+| `mkcd <dir>` | Create a directory and change into it |
+| `timer { … }` | Run a block and print how long it took |
 | `docs [topic]` | Show the docs index, or the URL of one guide |
 
 ```nushell
@@ -59,9 +61,15 @@ cd /tmp
 jump arbor                # straight back
 up 2                      # /home/you
 
+mkcd ~/scratch/experiment # create and enter
+timer { cargo build }     # took 42s 118ms
+
 docs                      # list the guides
 docs 04-configuration     # URL for one guide
 ```
+
+`timer` passes the block's value through, so it can wrap any expression
+without changing the result.
 
 Bookmarks persist in `marks.json` under `$nu.data-dir`, so they survive
 sessions. `jump` reports a clear error if a bookmarked directory has since been
