@@ -230,7 +230,7 @@ jobs:
           generate_release_notes: true
 
       - name: Upload as workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: arbor-${{ matrix.target }}
           path: |
