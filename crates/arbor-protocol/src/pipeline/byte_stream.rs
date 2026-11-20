@@ -15,6 +15,16 @@ use std::ops::Bound;
 use std::os::fd::OwnedFd;
 #[cfg(windows)]
 use std::os::windows::io::OwnedHandle;
+
+/// Raw descriptor used to poll a child's pipe without blocking.
+///
+/// Unix has [`std::os::fd::RawFd`]; the Ctrl+B shortcut that uses it is
+/// Unix-only, so on other platforms this is an inert integer that is never
+/// produced.
+#[cfg(unix)]
+pub type RawPipeFd = std::os::fd::RawFd;
+#[cfg(not(unix))]
+pub type RawPipeFd = i32;
 use std::{
     fmt::Debug,
     fs::File,
@@ -753,8 +763,15 @@ impl ByteStream {
                         ChildPipe::Pipe(pipe) => {
                             // Arbor: pass the fd so the drain can poll and
                             // notice a Ctrl+B pressed while the child is idle.
-                            use std::os::fd::AsRawFd;
-                            let fd = Some(pipe.as_raw_fd());
+                            // Only Unix has a pollable descriptor here, and only
+                            // Unix implements the shortcut at all.
+                            #[cfg(unix)]
+                            let fd = {
+                                use std::os::fd::AsRawFd;
+                                Some(pipe.as_raw_fd())
+                            };
+                            #[cfg(not(unix))]
+                            let fd = None;
                             copy_with_signals_fd(pipe, dest, span, signals, fd)?;
                         }
                         ChildPipe::Tee(tee) => {
@@ -1258,7 +1275,7 @@ pub fn copy_with_signals_fd(
     mut writer: impl Write,
     span: Span,
     signals: &Signals,
-    fd: Option<std::os::fd::RawFd>,
+    fd: Option<RawPipeFd>,
 ) -> Result<u64, ShellError> {
     let from_io_error = IoError::factory(span, None);
     // Arbor: always use `generic_copy` so the Ctrl+B backgrounding check is
@@ -1282,7 +1299,7 @@ fn generic_copy(
     mut writer: impl Write,
     span: Span,
     signals: &Signals,
-    fd: Option<std::os::fd::RawFd>,
+    fd: Option<RawPipeFd>,
 ) -> Result<u64, ShellError> {
     let from_io_error = IoError::factory(span, None);
     let buf = &mut [0; DEFAULT_BUF_SIZE];

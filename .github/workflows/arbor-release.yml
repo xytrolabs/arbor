@@ -86,24 +86,23 @@ jobs:
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: sudo apt-get update && sudo apt-get install -y musl-tools
 
-      - name: Install cross linkers (aarch64/armv7)
+      - name: Install cross linkers (aarch64/armv7 musl)
         if: matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'armv7-unknown-linux-musleabihf'
         run: |
+          # Zig ships its own musl libc and cross-compiles C sources (ring), so
+          # it needs no external toolchain. musl.cc was previously downloaded
+          # here, but it is unreachable from hosted runners often enough to
+          # fail whole jobs (all retries timed out at 15s each).
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
-          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-musl" ]; then
-            PREFIX=aarch64-linux-musl; TARBALL=aarch64-linux-musl-cross
-          else
-            PREFIX=armv7l-linux-musleabihf; TARBALL=armv7l-linux-musleabihf-cross
-          fi
-          # musl.cc is occasionally unreachable; a single attempt failed the
-          # whole job when its connect timed out after 134s.
-          if [ ! -x "$HOME/$TARBALL/bin/$PREFIX-gcc" ]; then
-            curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors \
-                 --connect-timeout 30 --max-time 600 \
-                 "https://musl.cc/$TARBALL.tgz" | tar -xz -C "$HOME"
-          fi
-          echo "$HOME/$TARBALL/bin" >> $GITHUB_PATH
+
+      - name: Set up Zig
+        if: matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'armv7-unknown-linux-musleabihf'
+        uses: mlugg/setup-zig@v2
+
+      - name: Install cargo-zigbuild
+        if: matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'armv7-unknown-linux-musleabihf'
+        run: cargo install cargo-zigbuild --locked
 
       - name: Install cross linkers (aarch64 gnu)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
@@ -115,33 +114,27 @@ jobs:
           echo "AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar" >> $GITHUB_ENV
 
       - name: Configure musl static linking
-        if: contains(matrix.target, 'musl')
+        if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
           # Write linker/compiler overrides to $GITHUB_ENV so they persist into
           # the build step (plain `export` would not cross step boundaries).
-          case "${{ matrix.target }}" in
-            x86_64-*)
-              echo "CC_x86_64_unknown_linux_musl=musl-gcc" >> $GITHUB_ENV
-              ;;
-            aarch64-*)
-              echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-musl-gcc" >> $GITHUB_ENV
-              echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS=-C target-feature=+crt-static" >> $GITHUB_ENV
-              echo "CC_aarch64_unknown_linux_musl=aarch64-linux-musl-gcc" >> $GITHUB_ENV
-              # Crates with C sources (ring) also need the matching archiver;
-              # the host `ar` writes x86 objects into an ARM archive.
-              echo "AR_aarch64_unknown_linux_musl=aarch64-linux-musl-ar" >> $GITHUB_ENV
-              ;;
-            armv7-*)
-              echo "CARGO_TARGET_ARMV7_UNKNOWN_LINUX_MUSLEABIHF_LINKER=armv7l-linux-musleabihf-gcc" >> $GITHUB_ENV
-              echo "CC_armv7_unknown_linux_musleabihf=armv7l-linux-musleabihf-gcc" >> $GITHUB_ENV
-              echo "AR_armv7_unknown_linux_musleabihf=armv7l-linux-musleabihf-ar" >> $GITHUB_ENV
-              ;;
-          esac
+          echo "CC_x86_64_unknown_linux_musl=musl-gcc" >> $GITHUB_ENV
 
       # --- Build -----------------------------------------------------------
       # arbor-test-support is a workspace dev crate; excluding it trims the build.
+      # Only the shipped binary is built: `--workspace` would drag in plugin
+      # crates that link OpenSSL (openssl-sys does not cross-compile for musl or
+      # aarch64 without a system OpenSSL), and none of them are in the archive.
       - name: Build
-        run: cargo build --release --locked --workspace --exclude arbor-test-support --target ${{ matrix.target }}
+        run: |
+          case "${{ matrix.target }}" in
+            aarch64-unknown-linux-musl|armv7-unknown-linux-musleabihf)
+              cargo zigbuild --release --locked --bin arbor --target ${{ matrix.target }}
+              ;;
+            *)
+              cargo build --release --locked --bin arbor --target ${{ matrix.target }}
+              ;;
+          esac
 
       # --- Package ---------------------------------------------------------
       - name: Package (unix)
