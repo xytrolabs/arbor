@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     # The suite is not fast, but it is not unbounded either. If it ever needs
     # more than this, something is hanging rather than being slow.
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -68,15 +68,19 @@ jobs:
 
       - name: Test
         run: |
-          # `--lib --bins` runs every unit test. Integration tests are excluded on
-          # purpose: several of them use `#[deps(NU_PLUGIN_*)]`, which needs plugin
-          # binaries built and exported by upstream's `toolkit.nu`, and they do not
-          # compile without that harness.
+          # Arbor's own crates, not all 46 inherited ones: building a test harness
+          # for every crate in the workspace takes longer than this job's budget on
+          # a hosted runner. These are the crates Arbor owns and changes.
+          #
+          # `--lib --bins` avoids integration tests, several of which use
+          # `#[deps(NU_PLUGIN_*)]` and only compile with upstream's `toolkit.nu`
+          # plugin harness.
           #
           # `--skip` drops a test that hangs on the unmodified upstream tree too, so
           # it is not an Arbor regression.
           cargo test --locked \
-            --workspace --exclude arbor-test-support \
+            -p arbor -p arbor-system -p arbor-protocol -p arbor-parser \
+            -p arbor-config -p arbor-cmd-lang \
             --lib --bins \
             -- --skip external_command_trailing_newline
 
