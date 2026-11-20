@@ -227,3 +227,34 @@ $nu.default-config-dir
 
 Invalid options are reported as config errors at startup rather than silently
 ignored.
+
+## Startup cost
+
+Whenever a config file is loaded — a login shell, `-l`, or `--config` — Arbor
+also loads its own default config, and that default config imports the whole
+standard library. Measured on a warm cache on x86_64:
+
+| Phase | Cost |
+|---|---|
+| Interpreter boot, no config at all | ~10 ms |
+| `use std *` (the entire standard library) | ~19 ms |
+| Your own `config.nu`, evaluated | < 1 ms |
+
+So interactive startup is almost entirely the standard library, not your
+dotfiles. Two consequences worth knowing:
+
+- **Do not add `use std *` to your `config.nu`.** Arbor's built-in default
+  config already does it. There is no parsed-module cache, so a second import
+  re-parses everything and costs another ~17 ms on every start.
+- `help` is the single most expensive std module (~5 ms of the 19).
+
+If a start feels slow, ask Arbor to attribute the time:
+
+```sh
+ARBOR_CFG_TIMING=1 arbor -c 'print 1'
+ARBOR_LOGIN_TIMING=1 arbor -l -c 'print 1'
+```
+
+The first reports default-config and user-config evaluation; the second reports
+how long the login profiles blocked and how many variables they imported.
+

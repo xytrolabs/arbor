@@ -92,12 +92,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
           if [ "${{ matrix.target }}" = "aarch64-unknown-linux-musl" ]; then
-            curl -fsSL https://musl.cc/aarch64-linux-musl-cross.tgz | tar -xz -C "$HOME"
-            echo "$HOME/aarch64-linux-musl-cross/bin" >> $GITHUB_PATH
+            PREFIX=aarch64-linux-musl; TARBALL=aarch64-linux-musl-cross
           else
-            curl -fsSL https://musl.cc/armv7l-linux-musleabihf-cross.tgz | tar -xz -C "$HOME"
-            echo "$HOME/armv7l-linux-musleabihf-cross/bin" >> $GITHUB_PATH
+            PREFIX=armv7l-linux-musleabihf; TARBALL=armv7l-linux-musleabihf-cross
           fi
+          # musl.cc is occasionally unreachable; a single attempt failed the
+          # whole job when its connect timed out after 134s.
+          if [ ! -x "$HOME/$TARBALL/bin/$PREFIX-gcc" ]; then
+            curl -fsSL --retry 6 --retry-delay 5 --retry-all-errors \
+                 --connect-timeout 30 --max-time 600 \
+                 "https://musl.cc/$TARBALL.tgz" | tar -xz -C "$HOME"
+          fi
+          echo "$HOME/$TARBALL/bin" >> $GITHUB_PATH
 
       - name: Install cross linkers (aarch64 gnu)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
