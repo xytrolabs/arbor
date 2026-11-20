@@ -68,12 +68,16 @@ jobs:
 
       - name: Test
         run: |
-          # `--lib --bins --tests` keeps doctests out (their harness does not
-          # accept `--skip`), and the skipped test hangs on the unmodified
-          # upstream tree too, so it is not an Arbor regression.
+          # `--lib --bins` runs every unit test. Integration tests are excluded on
+          # purpose: several of them use `#[deps(NU_PLUGIN_*)]`, which needs plugin
+          # binaries built and exported by upstream's `toolkit.nu`, and they do not
+          # compile without that harness.
+          #
+          # `--skip` drops a test that hangs on the unmodified upstream tree too, so
+          # it is not an Arbor regression.
           cargo test --locked \
             --workspace --exclude arbor-test-support \
-            --lib --bins --tests \
+            --lib --bins \
             -- --skip external_command_trailing_newline
 
   clippy:
@@ -94,4 +98,6 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Clippy
-        run: cargo clippy --locked --workspace --exclude arbor-test-support --all-targets
+        # Same target selection as the test job: `--all-targets` would pull in the
+        # plugin integration tests, which cannot compile here.
+        run: cargo clippy --locked --workspace --exclude arbor-test-support --lib --bins
