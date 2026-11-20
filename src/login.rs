@@ -13,9 +13,17 @@
 //!
 //! So the profiles are evaluated by the system's POSIX `sh`, and the resulting
 //! environment is imported into this process before any Arbor configuration is
-//! read. That mirrors what bash and zsh do when they are login shells, and it
-//! means `chsh -s .../arbor` gives a working session with no extra setup —
-//! including on a distribution that ships Arbor as its default shell.
+//! read.
+//!
+//! ## Why this is split into spawn/finish
+//!
+//! Sourcing the profiles is I/O-bound (fork, exec, read a dozen files) while
+//! Arbor's own startup is CPU-bound (building the engine, registering commands).
+//! Running them one after the other costs the sum; running them concurrently
+//! costs the max. [`spawn_login_profiles`] starts the shell as early as the
+//! command line is known, and [`PendingLogin::finish`] blocks for its result
+//! immediately before the environment is captured. On a warm cache that hides
+//! most of the profile cost behind work Arbor was doing anyway.
 //!
 //! Without this, a login session starts with only the `PATH` that `login(1)`
 //! or the display manager provides (typically `/usr/bin:/bin`), so
@@ -47,8 +55,7 @@ const PROFILE_TIMEOUT: Duration = Duration::from_secs(5);
 /// Bash and zsh read these two. Each one is checked for readability before it
 /// is sourced: `.` is a *special builtin*, and in a non-interactive `sh` a
 /// failed special builtin makes the shell **exit**, so sourcing a missing file
-/// would skip every profile after it — and silently, since the profiles'
-/// stderr is not useful to show.
+/// would skip every profile after it — and silently.
 #[cfg(unix)]
 const PROFILE_FILES: [&str; 2] = ["/etc/profile", "$HOME/.profile"];
 
@@ -61,21 +68,37 @@ const PROFILE_FILES: [&str; 2] = ["/etc/profile", "$HOME/.profile"];
 /// - `_`: the last argument of the profile shell's last command.
 const NOT_INHERITED: [&str; 4] = ["PWD", "OLDPWD", "SHLVL", "_"];
 
-/// Source `/etc/profile` then `~/.profile` and import the resulting
-/// environment into this process.
-///
-/// Failures are deliberately silent: a broken or missing profile must not stop
-/// the shell from starting, because starting is the only way to fix it.
+/// A profile run in progress. See the module docs for why this exists.
 #[cfg(unix)]
-pub fn source_login_profiles() {
-    let Ok(dump_path) = temp_dump_path() else {
-        return;
-    };
+pub struct PendingLogin {
+    dump_path: std::path::PathBuf,
+    pid: Pid,
+    done: mpsc::Receiver<()>,
+}
+
+/// Windows has no `/etc/profile`; the type exists so callers are uniform.
+#[cfg(not(unix))]
+pub struct PendingLogin;
+
+/// Start sourcing the login profiles, without waiting for them.
+///
+/// Returns `None` when there is nothing to do — not a Unix system, no readable
+/// profile files, `sh` missing, or no temp directory. Those are all normal on
+/// containers and minimal images, and returning early means a login shell in
+/// such an image pays nothing at all for this feature.
+#[cfg(unix)]
+pub fn spawn_login_profiles() -> Option<PendingLogin> {
+    if !any_profile_readable() {
+        return None;
+    }
+
+    let dump_path = temp_dump_path().ok()?;
     let quoted = shell_quote(&dump_path.to_string_lossy());
     let script = profile_script(&quoted);
 
-    // `mut` is needed here: the waiter thread calls `wait()`, which takes
-    // `&mut self` on the child it owns.
+    let spawn_started = std::time::Instant::now();
+
+    // `mut` is needed: the waiter thread calls `wait()`, taking `&mut self`.
     let Ok(mut child) = Command::new("sh")
         .arg("-c")
         .arg(&script)
@@ -88,30 +111,99 @@ pub fn source_login_profiles() {
         .process_group(0)
         .spawn()
     else {
-        return;
+        return None;
     };
 
-    // Wait for the profiles with a deadline, but without polling: sleeping in
-    // 20 ms steps added that much dead time to every single login. The waiter
-    // thread reaps the child in every case, including after a kill.
     let pid = Pid::from_raw(child.id() as i32);
-    let (done_tx, done_rx) = mpsc::channel();
+    if std::env::var_os("ARBOR_LOGIN_TIMING").is_some() {
+        eprintln!(
+            "arbor: login profile spawn took {:.1} ms",
+            spawn_started.elapsed().as_secs_f64() * 1000.0
+        );
+    }
+    let (done_tx, done) = mpsc::channel();
+    // The waiter reaps the child in every case, including after a kill. Only
+    // "it is finished" matters here; the exit status is not useful.
     std::thread::spawn(move || {
-        let _ = done_tx.send(child.wait());
+        let _ = child.wait();
+        let _ = done_tx.send(());
     });
 
-    if done_rx.recv_timeout(PROFILE_TIMEOUT).is_err() {
-        // Timed out: kill the whole group, and leave the environment alone
-        // rather than importing a half-built one.
-        let _ = kill(Pid::from_raw(-pid.as_raw()), Signal::SIGKILL);
-        let _ = std::fs::remove_file(&dump_path);
-        return;
-    }
+    Some(PendingLogin {
+        dump_path,
+        pid,
+        done,
+    })
+}
 
-    if let Ok(dump) = std::fs::read(&dump_path) {
-        apply_dump(&dump);
+#[cfg(not(unix))]
+pub fn spawn_login_profiles() -> Option<PendingLogin> {
+    None
+}
+
+#[cfg(unix)]
+impl PendingLogin {
+    /// Wait for the profiles and import their environment.
+    ///
+    /// Returns how long the caller was blocked. `None` means the profiles were
+    /// abandoned (timeout), in which case the environment is left untouched
+    /// rather than half-applied.
+    pub fn finish(self) -> Option<Duration> {
+        let waited = std::time::Instant::now();
+
+        if self.done.recv_timeout(PROFILE_TIMEOUT).is_err() {
+            // Timed out: kill the whole group and discard the partial result.
+            let _ = kill(Pid::from_raw(-self.pid.as_raw()), Signal::SIGKILL);
+            let _ = std::fs::remove_file(&self.dump_path);
+            return None;
+        }
+
+        let imported = if let Ok(dump) = std::fs::read(&self.dump_path) {
+            let pairs = parse_env_dump(&dump);
+            let count = pairs.len();
+            apply_dump(&dump);
+            count
+        } else {
+            0
+        };
+        let _ = std::fs::remove_file(&self.dump_path);
+
+        let blocked = waited.elapsed();
+        // Opt-in diagnostics: a login shell is hard to profile from the outside,
+        // and "why is my login slow" is a question worth being able to answer.
+        if std::env::var_os("ARBOR_LOGIN_TIMING").is_some() {
+            eprintln!(
+                "arbor: login profiles blocked {:.1} ms, imported {imported} variables",
+                blocked.as_secs_f64() * 1000.0
+            );
+        }
+        Some(blocked)
     }
-    let _ = std::fs::remove_file(&dump_path);
+}
+
+#[cfg(not(unix))]
+impl PendingLogin {
+    pub fn finish(self) -> Option<Duration> {
+        None
+    }
+}
+
+/// True when at least one profile file exists and is readable, so there is any
+/// point in starting a shell.
+///
+/// `$HOME/.profile` is checked by expanding `HOME` here rather than asking a
+/// shell, because the shell has not started yet.
+#[cfg(unix)]
+fn any_profile_readable() -> bool {
+    use std::path::Path;
+
+    if Path::new("/etc/profile").exists() {
+        return true;
+    }
+    match env::var_os("HOME") {
+        Some(home) => Path::new(&home).join(".profile").exists(),
+        None => false,
+    }
 }
 
 /// Build the `sh` script that evaluates the profiles and dumps the environment.
@@ -135,10 +227,6 @@ fn profile_script(quoted_dump_path: &str) -> String {
     script
 }
 
-/// Windows has no `/etc/profile`; this is the one OS where nothing is needed.
-#[cfg(not(unix))]
-pub fn source_login_profiles() {}
-
 /// Import a NUL-separated `env -0` dump into this process's environment.
 #[cfg(unix)]
 fn apply_dump(dump: &[u8]) {
@@ -148,8 +236,8 @@ fn apply_dump(dump: &[u8]) {
         }
         // `set_var` is `unsafe` in edition 2024 because writing the environment
         // races with concurrent readers. This runs at the top of `main`, before
-        // any thread, signal handler or logger exists, so there is no reader to
-        // race with; every later read sees a fully populated environment.
+        // any thread that reads the environment exists, so there is no reader
+        // to race with; every later read sees a fully populated environment.
         unsafe { env::set_var(&name, &value) };
     }
 }

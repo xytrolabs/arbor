@@ -155,6 +155,16 @@ fn main() -> Result<()> {
     let script_name = parsed.script_name;
     let args_to_script = parsed.args_to_script;
 
+    // Start the login profiles now and collect them just before the environment
+    // is captured (`gather_parent_env_vars`). Sourcing them is I/O-bound and
+    // Arbor's startup is CPU-bound, so overlapping the two hides most of the
+    // profile cost instead of paying for it serially. See `login.rs`.
+    let pending_login = if parsed_nu_cli_args.login_shell.is_some() {
+        login::spawn_login_profiles()
+    } else {
+        None
+    };
+
     experimental_options::load(&engine_state, &parsed_nu_cli_args, !script_name.is_empty());
 
     let mut engine_state = command_context::add_command_context(engine_state);
@@ -322,15 +332,11 @@ fn main() -> Result<()> {
     // late to fill in a missing `PATH`, so `login.rs` evaluates them with the
     // system `sh` and imports the result.
     //
-    // This must run before `gather_parent_env_vars`, which reads the process
-    // environment once. It is deliberately not gated on `--no-config-file`:
-    // `-n` skips Arbor's own config files, while the POSIX profiles are part of
-    // the login-shell contract and cost nothing when absent.
-    if engine_state.is_login {
-        start_time = arbor_utils::time::Instant::now();
-        login::source_login_profiles();
-        perf!("source login profiles", start_time, use_color);
-    }
+    // The shell was started back at argument parsing; this only waits for it,
+    // and must happen before `gather_parent_env_vars`, which reads the process
+    // environment once. Deliberately not gated on `--no-config-file`: `-n`
+    // skips Arbor's own config files, while the POSIX profiles are part of the
+    // login-shell contract.
 
     // Set up logger
     start_time = arbor_utils::time::Instant::now();
@@ -422,11 +428,19 @@ fn main() -> Result<()> {
         Value::record(record! {}, Span::unknown()),
     );
 
+    // Collect the login profiles started at argument parsing. Nothing before this
+    // point needs them, and this is the last moment before the process
+    // environment is read for the last time.
+    if let Some(pending) = pending_login {
+        if let Some(blocked) = pending.finish() {
+            perf!("wait for login profiles", elapsed: blocked, use_color);
+        }
+    }
+
     start_time = arbor_utils::time::Instant::now();
     // First, set up env vars as strings only
     gather_parent_env_vars(&mut engine_state, init_cwd.as_ref());
     perf!("gather env vars", start_time, use_color);
-
     let mut stack = Stack::new();
     start_time = arbor_utils::time::Instant::now();
     let config = engine_state.get_config();

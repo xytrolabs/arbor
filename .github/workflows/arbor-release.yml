@@ -100,6 +100,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu
           echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar" >> $GITHUB_ENV
 
       - name: Configure musl static linking
         if: contains(matrix.target, 'musl')
@@ -114,10 +116,14 @@ jobs:
               echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-musl-gcc" >> $GITHUB_ENV
               echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS=-C target-feature=+crt-static" >> $GITHUB_ENV
               echo "CC_aarch64_unknown_linux_musl=aarch64-linux-musl-gcc" >> $GITHUB_ENV
+              # Crates with C sources (ring) also need the matching archiver;
+              # the host `ar` writes x86 objects into an ARM archive.
+              echo "AR_aarch64_unknown_linux_musl=aarch64-linux-musl-ar" >> $GITHUB_ENV
               ;;
             armv7-*)
               echo "CARGO_TARGET_ARMV7_UNKNOWN_LINUX_MUSLEABIHF_LINKER=armv7l-linux-musleabihf-gcc" >> $GITHUB_ENV
               echo "CC_armv7_unknown_linux_musleabihf=armv7l-linux-musleabihf-gcc" >> $GITHUB_ENV
+              echo "AR_armv7_unknown_linux_musleabihf=armv7l-linux-musleabihf-ar" >> $GITHUB_ENV
               ;;
           esac
 
@@ -134,19 +140,27 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           [ -n "$VERSION" ] || VERSION="manual"
           STEM="arbor-${VERSION}-${{ matrix.target }}"
-          mkdir -p "dist/$STEM"
+          mkdir -p "dist/$STEM/share/arbor" "dist/$STEM/docs"
           cp "target/${{ matrix.target }}/release/arbor" "dist/$STEM/"
-          # Ship the Indent helper library and docs alongside the binary.
+          # The installer reads share/arbor/arbor.ind and docs/ relative to the
+          # extracted binary, so these must keep that layout. Putting arbor.ind
+          # at the archive root silently installs a shell with no helper
+          # library.
           if [ -f share/arbor/arbor.ind ]; then
-            cp share/arbor/arbor.ind "dist/$STEM/"
+            cp share/arbor/arbor.ind "dist/$STEM/share/arbor/"
           fi
           if [ -d docs ]; then
-            cp -r docs "dist/$STEM/"
+            cp docs/*.md "dist/$STEM/docs/" 2>/dev/null || true
           fi
           cp NOTICE "dist/$STEM/" 2>/dev/null || true
           cp LICENSE "dist/$STEM/" 2>/dev/null || true
+          cp README.md "dist/$STEM/" 2>/dev/null || true
           tar -czf "dist/$STEM.tar.gz" -C dist "$STEM"
-          echo "ASSET=dist/$STEM.tar.gz" >> $GITHUB_ENV
+          # Stable, version-less alias: the installer falls back to this name
+          # when it cannot ask the API for the latest tag (rate limits, offline,
+          # or a mirror).
+          cp "dist/$STEM.tar.gz" "dist/arbor-${{ matrix.target }}.tar.gz"
+          echo "ASSETS=dist/$STEM.tar.gz dist/arbor-${{ matrix.target }}.tar.gz" >> $GITHUB_ENV
 
       - name: Package (windows)
         if: matrix.archive == 'zip'
@@ -155,23 +169,36 @@ jobs:
           $Version = $env:GITHUB_REF_NAME -replace '^v', ''
           if (-not $Version) { $Version = 'manual' }
           $Stem = "arbor-$Version-${{ matrix.target }}"
-          New-Item -ItemType Directory -Force -Path "dist/$Stem" | Out-Null
+          New-Item -ItemType Directory -Force -Path "dist/$Stem/share/arbor" | Out-Null
+          New-Item -ItemType Directory -Force -Path "dist/$Stem/docs" | Out-Null
           Copy-Item "target/${{ matrix.target }}/release/arbor.exe" "dist/$Stem/"
-          if (Test-Path "share/arbor/arbor.ind") { Copy-Item "share/arbor/arbor.ind" "dist/$Stem/" }
-          if (Test-Path "docs") { Copy-Item -Recurse "docs" "dist/$Stem/" }
+          if (Test-Path "share/arbor/arbor.ind") { Copy-Item "share/arbor/arbor.ind" "dist/$Stem/share/arbor/" }
+          if (Test-Path "docs") { Get-ChildItem "docs/*.md" | Copy-Item -Destination "dist/$Stem/docs/" }
+          if (Test-Path "NOTICE") { Copy-Item "NOTICE" "dist/$Stem/" }
+          if (Test-Path "LICENSE") { Copy-Item "LICENSE" "dist/$Stem/" }
           Compress-Archive -Path "dist/$Stem" -DestinationPath "dist/$Stem.zip"
-          "ASSET=dist/$Stem.zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Copy-Item "dist/$Stem.zip" "dist/arbor-${{ matrix.target }}.zip"
+          "ASSETS=dist/$Stem.zip dist/arbor-${{ matrix.target }}.zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Generate checksum
         run: |
           cd dist
-          FILE=$(basename "$ASSET")
-          if command -v sha256sum >/dev/null 2>&1; then
-            sha256sum "$FILE" > "$FILE.sha256"
-          else
-            shasum -a 256 "$FILE" > "$FILE.sha256"
-          fi
-          cat "$FILE.sha256"
+          for f in $ASSETS; do
+            FILE=$(basename "$f")
+            if command -v sha256sum >/dev/null 2>&1; then
+              sha256sum "$FILE" > "$FILE.sha256"
+            elif command -v shasum >/dev/null 2>&1; then
+              shasum -a 256 "$FILE" > "$FILE.sha256"
+            elif command -v openssl >/dev/null 2>&1; then
+              # macOS and the Windows runner's bash have neither sha256sum nor
+              # shasum in some images; openssl is the common denominator.
+              printf '%s  %s\n' "$(openssl dgst -sha256 "$FILE" | awk '{print $NF}')" "$FILE" > "$FILE.sha256"
+            else
+              echo "no sha256 tool available (sha256sum, shasum, openssl)" >&2
+              exit 1
+            fi
+            cat "$FILE.sha256"
+          done
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
@@ -181,7 +208,10 @@ jobs:
             dist/*.tar.gz
             dist/*.zip
             dist/*.sha256
-          draft: true
+          # Published, not draft: the installer's GitHub fallback downloads
+          # `releases/latest/download/...`, which 404s while a release is a
+          # draft.
+          draft: false
           generate_release_notes: true
 
       - name: Upload as workflow artifact

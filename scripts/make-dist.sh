@@ -34,14 +34,42 @@ mkdir -p "$DIST"
 
 host_target() { rustc -vV | sed -n 's/^host: //p'; }
 
+# Print the gcc of a musl cross toolchain for TARGET, if one is unpacked.
+cross_toolchain_path() {
+    local target="$1" prefix bin
+    prefix="$(cross_prefix "$target")"
+    [ -n "$prefix" ] || return 1
+    for bin in "$HOME/.local/opt/$prefix-cross/bin" "$HOME/$prefix-cross/bin"; do
+        if [ -x "$bin/$prefix-gcc" ]; then
+            echo "$bin/$prefix-gcc"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Every Linux target this machine can actually build: the host, plus each
+# architecture with a cross toolchain unpacked. Missing toolchains are reported
+# rather than silently skipped, because "all distributables" should mean all of
+# them, and a silent gap is how an architecture ships broken.
 default_targets() {
-    host_target
-    # A static musl binary runs on any glibc or musl distribution, so it is the
-    # one Linux download that covers Breeze, Core and Evergreen alike.
-    case "$(host_target)" in
-        x86_64-unknown-linux-gnu) echo x86_64-unknown-linux-musl ;;
-        aarch64-unknown-linux-gnu) echo aarch64-unknown-linux-musl ;;
+    local host t
+    host="$(host_target)"
+    echo "$host"
+    case "$host" in
+        *-linux-*) ;;
+        *) return 0 ;;
     esac
+    for t in x86_64-unknown-linux-musl \
+             aarch64-unknown-linux-musl \
+             armv7-unknown-linux-musleabihf; do
+        [ "$t" = "$host" ] && continue
+        if cross_toolchain_path "$t" >/dev/null; then
+            echo "$t"
+        else
+            echo "    note: skipping $t (no cross toolchain)" >&2
+        fi
+    done
 }
 
 features_args() {
@@ -69,17 +97,15 @@ use_cross_toolchain() {
     prefix="$(cross_prefix "$target")"
     [ -n "$prefix" ] || return 0
 
-    for bin in "$HOME/.local/opt/$prefix-cross/bin" "$HOME/$prefix-cross/bin"; do
-        gcc="$bin/$prefix-gcc"
-        if [ -x "$gcc" ]; then
-            local upper="${target^^}"
-            export "CC_${target//-/_}=$gcc"
-            export "AR_${target//-/_}=$bin/$prefix-ar"
-            export "CARGO_TARGET_${upper//-/_}_LINKER=$gcc"
-            echo "    using cross toolchain $gcc" >&2
-            return 0
-        fi
-    done
+    if gcc="$(cross_toolchain_path "$target")"; then
+        bin="$(dirname "$gcc")"
+        local upper="${target^^}"
+        export "CC_${target//-/_}=$gcc"
+        export "AR_${target//-/_}=$bin/$prefix-ar"
+        export "CARGO_TARGET_${upper//-/_}_LINKER=$gcc"
+        echo "    using cross toolchain $gcc" >&2
+        return 0
+    fi
     return 0
 }
 

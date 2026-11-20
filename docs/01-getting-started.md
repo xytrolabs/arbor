@@ -63,6 +63,17 @@ Three properties make this safe to rely on:
 
 Verify it with the rehearsal command below.
 
+If a login ever feels slow, ask Arbor where the time went:
+
+```sh
+ARBOR_LOGIN_TIMING=1 ~/.local/bin/arbor -l -c 'print "ready"'
+```
+
+It reports how long the profile shell took and how many variables it imported.
+Typical values are 10–20 ms on a local disk; much more means a profile is doing
+something expensive (a network mount, a version manager, a package-manager
+hook), which is worth fixing in `~/.profile` rather than in Arbor.
+
 ### Trying it before committing
 
 `chsh` only affects new login sessions, so you can rehearse safely. Simulate a
