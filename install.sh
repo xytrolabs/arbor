@@ -141,6 +141,20 @@ resolve_version() {
   tag="$(fetch_stdout "https://api.github.com/repos/${ARBOR_REPO}/releases/latest" \
         | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 \
         | sed 's/.*"\([^"]*\)"[[:space:]]*$/\1/')" || true
+  if [ -z "$tag" ] && [ -n "$ARBOR_BASE_URL" ]; then
+    # The site publishes the current version next to the assets. This matters
+    # more than it looks: version-less filenames change contents under a stable
+    # URL, so a CDN is allowed to serve an old archive while handing over a new
+    # checksum. Resolving the version lets the download use an immutable name,
+    # where such a mismatch is impossible.
+    tag="$(fetch_stdout "${ARBOR_BASE_URL%/}/latest.txt" 2>/dev/null \
+          | head -1 | tr -d '[:space:]')" || true
+    # Guard against an HTML error page being taken for a version.
+    case "$tag" in
+      [0-9]*.[0-9]*) : ;;
+      *) tag="" ;;
+    esac
+  fi
   if [ -n "$tag" ]; then
     ARBOR_VERSION="$tag"
     info "Version: $ARBOR_VERSION (latest)"
@@ -160,20 +174,21 @@ try_binary() {
 
   local -a candidates=()
   local t stem
-  # Primary target first, then the architecture's other libc. Within each
-  # target, the versioned asset first, then the version-less "latest" alias.
+  # Primary target first, then the architecture's other libc. Only immutable
+  # names are used: a version-less file on the site changes contents under a
+  # stable URL, and a CDN may then serve an old archive whose checksum no longer
+  # matches (or is missing entirely). GitHub's `releases/latest/download` is
+  # atomic with the release, so that alias is safe.
   for t in $TARGET ${TARGET_FALLBACK:-}; do
     [ -n "$t" ] || continue
     stem=""
     [ -n "$ARBOR_VERSION" ] && stem="arbor-${ARBOR_VERSION#v}-$t"
-    if [ -n "$ARBOR_BASE_URL" ]; then
-      [ -n "$stem" ] && candidates+=("${ARBOR_BASE_URL%/}/${stem}.${ext}")
-      candidates+=("${ARBOR_BASE_URL%/}/arbor-${t}.${ext}")
+    if [ -n "$ARBOR_BASE_URL" ] && [ -n "$stem" ]; then
+      candidates+=("${ARBOR_BASE_URL%/}/${stem}.${ext}")
     fi
     if [ -n "$stem" ]; then
       candidates+=("https://github.com/${ARBOR_REPO}/releases/download/${ARBOR_VERSION}/${stem}.${ext}")
     fi
-    # `latest/download` needs a stable, version-less name; try the tag-less form.
     candidates+=("https://github.com/${ARBOR_REPO}/releases/latest/download/arbor-${t}.${ext}")
   done
 

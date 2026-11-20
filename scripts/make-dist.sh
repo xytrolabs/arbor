@@ -189,10 +189,18 @@ echo
 echo "version: $VERSION"
 echo "built:   ${built[*]:-none}"
 [ ${#failed[@]} -gt 0 ] && echo "failed:  ${failed[*]}"
+
+# The installer reads this to learn the current version, so it can download an
+# immutable `arbor-<version>-<target>` file. Version-less aliases change contents
+# under a stable URL and a CDN may serve one of them stale while handing over a
+# fresh checksum; resolving the version avoids that entirely.
+printf '%s\n' "$VERSION" > "$DIST/latest.txt"
 echo
 ls -la "$DIST"/*.tar.gz 2>/dev/null | awk '{print "  " $5 "  " $9}'
 echo
-echo "To publish: copy dist/* to the site's dl/ directory, e.g."
-echo "  cp dist/*.tar.gz dist/*.sha256 ../XytroLabs/arbor-site/dl/"
+# Only versioned assets and latest.txt belong on the site: mutable names must
+# not be cacheable there.
+echo "To publish (versioned assets only):"
+echo "  cp $DIST/arbor-$VERSION-*.tar.gz $DIST/latest.txt $DIST/*.sha256 ../XytroLabs/arbor-site/dl/"
 
 [ ${#failed[@]} -eq 0 ]
