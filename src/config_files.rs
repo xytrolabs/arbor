@@ -303,6 +303,8 @@ fn eval_default_config(
     config_kind: ConfigFileKind,
 ) {
     info!("eval_default_config() {config_kind:?}");
+    let dbg = std::env::var_os("ARBOR_CFG_TIMING").is_some();
+    let t0 = std::time::Instant::now();
     eval_source(
         engine_state,
         stack,
@@ -311,6 +313,13 @@ fn eval_default_config(
         PipelineData::empty(),
         false,
     );
+    if dbg {
+        eprintln!(
+            "arbor: default {:?} took {:.2} ms",
+            config_kind,
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+    }
 
     // Merge the environment in case env vars changed in the config
     if let Err(e) = engine_state.merge_env(stack) {

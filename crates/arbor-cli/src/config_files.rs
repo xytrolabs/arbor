@@ -252,10 +252,13 @@ pub fn eval_config_contents_with_kind(
 
         match std::fs::read(&config_path) {
             Ok(contents) => {
+                let dbg = std::env::var_os("ARBOR_CFG_TIMING").is_some();
+                let t_read = std::time::Instant::now();
                 // Set the current active file to the config file.
                 let prev_file = engine_state.file.take();
                 engine_state.file = Some(config_path.clone());
 
+                let t_eval = std::time::Instant::now();
                 let exit_code = eval_source(
                     engine_state,
                     stack,
@@ -264,6 +267,13 @@ pub fn eval_config_contents_with_kind(
                     PipelineData::empty(),
                     false,
                 );
+                if dbg {
+                    eprintln!(
+                        "arbor: cfg {:?} eval {:.2} ms",
+                        kind,
+                        t_eval.elapsed().as_secs_f64() * 1000.0
+                    );
+                }
                 if exit_code != 0 && strict_mode {
                     kill_jobs_and_exit(engine_state, exit_code)
                 }
@@ -272,8 +282,17 @@ pub fn eval_config_contents_with_kind(
                 engine_state.file = prev_file;
 
                 // Merge the environment in case env vars changed in the config
+                let t_merge = std::time::Instant::now();
                 if let Err(e) = engine_state.merge_env(stack) {
                     report_shell_error(Some(stack), engine_state, &e);
+                }
+                if dbg {
+                    eprintln!(
+                        "arbor: cfg {:?} merge {:.2} ms, read {:.2} ms",
+                        kind,
+                        t_merge.elapsed().as_secs_f64() * 1000.0,
+                        t_read.elapsed().as_secs_f64() * 1000.0
+                    );
                 }
             }
             Err(err) => {
