@@ -142,6 +142,13 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
+          case "$VERSION" in
+            # A `v*` tag gives the version directly. A branch dispatch gives
+            # something like `arbor-1.0`, so fall back to Cargo.toml rather than
+            # producing `arbor-arbor-1.0-<target>`.
+            [0-9]*.[0-9]*) : ;;
+            *) VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)" ;;
+          esac
           [ -n "$VERSION" ] || VERSION="manual"
           STEM="arbor-${VERSION}-${{ matrix.target }}"
           mkdir -p "dist/$STEM/share/arbor" "dist/$STEM/docs"
@@ -171,6 +178,10 @@ jobs:
         shell: pwsh
         run: |
           $Version = $env:GITHUB_REF_NAME -replace '^v', ''
+          if ($Version -notmatch '^[0-9]+\.[0-9]+') {
+            $Version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"' `
+                        | Select-Object -First 1).Matches.Groups[1].Value
+          }
           if (-not $Version) { $Version = 'manual' }
           $Stem = "arbor-$Version-${{ matrix.target }}"
           New-Item -ItemType Directory -Force -Path "dist/$Stem/share/arbor" | Out-Null
