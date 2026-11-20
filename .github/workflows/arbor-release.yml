@@ -68,8 +68,13 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
+
+      # The repo pins a toolchain in rust-toolchain.toml, which overrides the
+      # action's default. Target components therefore have to be added *after*
+      # the switch, or cargo fails with "can't find crate for core ... target may
+      # not be installed".
+      - name: Add the matrix target to the pinned toolchain
+        run: rustup target add ${{ matrix.target }}
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
