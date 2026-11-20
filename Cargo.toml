@@ -185,7 +185,7 @@ indoc = "2"
 interprocess = "2.4.3"
 is_executable = "1.0.6"
 itertools = "0.15"
-jiff = "0.2.23"
+jiff = "1.0.0"
 kitest = "0.6.0"
 lean_string = { version = "0.8.0", features = ["serde"] }
 lexopt = "0.3.2"
